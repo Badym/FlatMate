@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Sekrety i konfiguracja lokalna
+.env
+
+# Baza danych i pliki użytkowników
+*.db
+*.sqlite3
+instance/
+app/static/uploads/
+
+# Narzędzia
+.pytest_cache/
+.idea/
+.vscode/
