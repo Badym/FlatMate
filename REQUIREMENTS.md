@@ -2,7 +2,7 @@
 
 ## 1. Cel aplikacji
 
-FlatMate pozwala współlokatorom uczciwie dzielić obowiązki domowe. Użytkownik tworzy mieszkanie lub do niego dołącza, a następnie członkowie planują zadania jednorazowe i cykliczne, przejmują je i zbierają punkty za ich wykonanie. Dane każdego mieszkania widzą wyłącznie jego członkowie.
+FlatMate pozwala współlokatorom uczciwie dzielić obowiązki domowe. Użytkownik tworzy mieszkanie lub do niego dołącza, a następnie członkowie planują zadania jednorazowe i cykliczne, przejmują je. Dane każdego mieszkania widzą wyłącznie jego członkowie.
 
 ## 2. Użytkownicy i ich możliwości
 
@@ -10,7 +10,7 @@ FlatMate pozwala współlokatorom uczciwie dzielić obowiązki domowe. Użytkown
 | --- | --- |
 | Gość | rejestracja, logowanie |
 | Członek mieszkania | tworzenie, przejmowanie i wykonywanie zadań, kalendarz, edycja własnego profilu i własnych zadań, opuszczenie mieszkania |
-| Admin mieszkania | to co członek oraz zaproszenia, akceptacja nowych osób, usuwanie członków, przekazanie roli admina, usunięcie mieszkania |
+| Admin mieszkania | to co członek oraz zaproszenia, przypisanie zadania, akceptacja nowych osób, usuwanie członków, przekazanie roli admina, usunięcie mieszkania |
 
 ## 3. Wymagania funkcjonalne
 
@@ -19,14 +19,14 @@ FlatMate pozwala współlokatorom uczciwie dzielić obowiązki domowe. Użytkown
 3. Utworzenie mieszkania; twórca zostaje jego adminem.
 4. Dołączanie do mieszkania przez link zaproszenia, po akceptacji admina.
 5. Zarządzanie członkami przez admina: usuwanie członków i przekazanie roli admina.
-6. Tworzenie, edycja i usuwanie zadań jednorazowych z typem, terminem i punktami.
+6. Tworzenie, edycja i usuwanie zadań jednorazowych z typem, terminem.
 7. Zadania cykliczne z rotacją osób, stałą osobą lub pulą „do wzięcia”.
-8. Przejmowanie zadań z puli i oznaczanie wykonania; wykonujący dostaje punkty.
+8. Przejmowanie zadań z puli i oznaczanie wykonania.
 9. Kalendarz zadań mieszkania.
 
 ## 4. Wymagania bezpieczeństwa
 
-1. Hasła przechowywane jako hash z solą, minimum 8 znaków.
+1. Hasła przechowywane jako hash z solą, minimum 12 znaków.
 2. Limit nieudanych prób logowania i ogólny komunikat błędu.
 3. Bezpieczna sesja: ciasteczko `HttpOnly`, `Secure`, `SameSite=Lax`.
 4. Kontrola dostępu po stronie serwera: użytkownik widzi tylko swoje mieszkania, akcje admina wymagają roli admina.
@@ -57,13 +57,3 @@ Model obejmuje zagrożenia dla kont użytkowników, izolacji mieszkań, danych w
 | T-10 | **Złośliwy plik jako awatar.** Przesłanie pliku SVG z JavaScriptem, HTML udającego obrazek albo bardzo dużego pliku. | serwer, przeglądarki innych użytkowników | XSS, zapełnienie dysku serwera | średnie | akceptowane tylko PNG i JPEG, sprawdzane po zawartości pliku; limit 2 MB; losowa nazwa pliku; ponowne zapisanie obrazu przez bibliotekę Pillow |
 | T-11 | **Wyciek `SECRET_KEY` lub uruchomienie w trybie debug.** Klucz trafia do publicznego repozytorium albo aplikacja działa z włączonym debuggerem. | sesje wszystkich użytkowników, serwer | podrabianie sesji dowolnego użytkownika; zdalne wykonanie kodu przez debugger Werkzeug | wysokie | sekrety w pliku `.env` dodanym do `.gitignore`; skanowanie repozytorium narzędziem gitleaks; `DEBUG=False` w konfiguracji produkcyjnej |
 | T-12 | **Podatne biblioteki zewnętrzne.** Użyta wersja Flaska lub innej biblioteki ma znaną podatność (CVE). | cała aplikacja | wykorzystanie gotowego exploita | średnie | przypięte wersje w `requirements.txt`; regularne skanowanie zależności (pip-audit, Dependabot) i aktualizacje |
-| T-13 | **Samodzielne zatwierdzenie prośby o dołączenie.** Osoba z linkiem wysyła bezpośrednio żądanie `POST /flats/6/requests/12/accept`, z pominięciem admina. | proces dołączania do mieszkania | wejście do mieszkania bez zgody admina | wysokie | akceptację prośby może wykonać tylko admin danego mieszkania (sprawdzenie roli i `flat_id`); prośba musi mieć status „oczekuje” |
-| T-14 | **Manipulacja punktami.** Członek zmienia w formularzu wartość `points` na 9999 albo oznacza jako wykonane cudze zadanie, żeby zebrać punkty. | punkty i statystyki członków | nieuczciwe wyniki, konflikty między współlokatorami | niskie | walidacja zakresu punktów po stronie serwera (np. 0–100); punkty za zadanie cykliczne brane z szablonu, a nie z formularza; zapis, kto i kiedy oznaczył wykonanie |
-| T-15 | **Mass assignment.** Atakujący dopisuje do formularza profilu lub rejestracji ukryte pole, np. `role=admin` albo `user_id=1`. | konta i role | nadanie sobie uprawnień admina lub zmiana cudzego konta | średnie | formularze WTForms z jawnie zdefiniowanymi polami; serwer nigdy nie przepisuje całego `request.form` do modelu; rola zmieniana tylko przez osobną akcję admina |
-| T-16 | **Enumeracja kont.** Formularz rejestracji odpowiada „ten e-mail jest już zajęty”, a formularz logowania inaczej reaguje dla istniejących kont. | adresy e-mail użytkowników | zebranie listy kont do ataków na hasła i phishingu | niskie | jednakowe komunikaty i czas odpowiedzi przy logowaniu; limit żądań na formularzu rejestracji |
-| T-17 | **Open redirect.** Link logowania z parametrem `?next=https://zla-strona.pl` przekierowuje po zalogowaniu na stronę atakującego, np. fałszywy formularz logowania. | użytkownicy klikający w linki | phishing i kradzież hasła | niskie | parametr `next` akceptowany tylko, jeśli jest ścieżką wewnątrz aplikacji (zaczyna się od `/`, bez domeny) |
-| T-18 | **Przeciążenie aplikacji (DoS).** Utworzenie tysięcy zadań albo zadania cyklicznego „co 1 dzień” bez daty końca, generującego ogromną liczbę wystąpień. | serwer i baza danych | spowolnienie lub zatrzymanie aplikacji dla wszystkich mieszkań | średnie | generowanie wystąpień tylko na najbliższe 4 tygodnie; limit liczby zadań na mieszkanie; limit żądań na użytkownika |
-| T-19 | **Clickjacking.** Złośliwa strona osadza aplikację w niewidocznej ramce (`iframe`) i nakłania admina do kliknięcia „Usuń członka”. | akcje admina | wykonanie akcji bez świadomości użytkownika | niskie | nagłówek `X-Frame-Options: DENY` i `frame-ancestors 'none'` w CSP |
-| T-20 | **Ujawnienie informacji w błędach.** Komunikat błędu pokazuje stack trace, ścieżki plików lub zapytania SQL. | konfiguracja i kod serwera | ułatwienie ataku przez poznanie budowy aplikacji | niskie | własne strony błędów 404 i 500 bez szczegółów technicznych; szczegóły tylko w logach serwera |
-| T-21 | **Brak śladu działań (zaprzeczenie).** Admin usuwa członka albo ktoś cofa wykonanie zadania, a potem twierdzi, że tego nie zrobił. | historia zmian w mieszkaniu | brak możliwości wyjaśnienia sporu lub incydentu | niskie | logowanie zdarzeń: logowania, zmiany ról, usunięcia członków, zmiany statusu zadań (kto, co, kiedy), bez haseł i tokenów |
-| T-22 | **Mieszkanie bez admina.** Ostatni admin usuwa swoje konto lub opuszcza mieszkanie. | zarządzanie mieszkaniem | nikt nie może przyjmować nowych osób ani usuwać członków | niskie | admin nie może opuścić mieszkania bez przekazania roli; przy usuwaniu konta rola przechodzi na najdłużej należącego członka |
