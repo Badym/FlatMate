@@ -16,7 +16,7 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 - **Backend:** Python + Flask
 - **Frontend:** HTML, CSS, Bootstrap 5
 - **Baza danych:** SQLite
-- **Biblioteki:** Flask-SQLAlchemy, Flask-Login, Flask-WTF
+- **Biblioteki:** Flask-SQLAlchemy, Flask-Login, Flask-WTF, Flask-Limiter, Pillow
 
 ## Krótki opis
 
