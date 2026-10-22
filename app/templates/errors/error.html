@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ title }} · FlatMate{% endblock %}
+
+{% block content %}
+<section class="fm-error">
+  <div class="container">
+    <div class="fm-error-card mx-auto fm-fade-up">
+      <span class="fm-icon-chip fm-icon-chip-lg"><i class="bi {{ icon }}" aria-hidden="true"></i></span>
+      <div class="fm-error-code text-gradient">{{ code }}</div>
+      <h1 class="h3 fw-bold mt-3">{{ title }}</h1>
+      <p class="text-body-secondary">{{ description }}</p>
+      <a class="btn btn-primary mt-3" href="{{ url_for('main.index') }}"><i class="bi bi-house" aria-hidden="true"></i>Strona główna</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

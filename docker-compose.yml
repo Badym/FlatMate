@@ -1,0 +1,75 @@
+# FlatMate: aplikacja + PostgreSQL.
+#   docker compose up --build                      – aplikacja na http://localhost:8000
+#   docker compose --profile test run --rm tests   – testy na osobnej, ulotnej bazie
+# Sekrety pochodzą z pliku .env (wzór: .env.example).
+
+name: flatmate
+
+x-postgres-healthcheck: &postgres-healthcheck
+  test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+  interval: 5s
+  timeout: 5s
+  retries: 10
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-flatmate}
+      POSTGRES_USER: ${POSTGRES_USER:-flatmate}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD w pliku .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Port tylko na localhost, dla uruchamiania aplikacji poza Dockerem.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck: *postgres-healthcheck
+
+  web:
+    build:
+      context: .
+      target: runtime
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY:?Ustaw SECRET_KEY w pliku .env}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-flatmate}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-flatmate}
+      TRUST_PROXY: ${TRUST_PROXY:-0}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8000}:8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  tests:
+    build:
+      context: .
+      target: test
+    profiles: ["test"]
+    depends_on:
+      db-test:
+        condition: service_healthy
+    environment:
+      TEST_DATABASE_URL: postgresql+psycopg://flatmate:flatmate@db-test:5432/flatmate_test
+
+  db-test:
+    image: postgres:17-alpine
+    profiles: ["test"]
+    environment:
+      POSTGRES_DB: flatmate_test
+      POSTGRES_USER: flatmate
+      POSTGRES_PASSWORD: flatmate
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck: *postgres-healthcheck
+
+volumes:
+  pgdata:

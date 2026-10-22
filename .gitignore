@@ -15,5 +15,7 @@ app/static/uploads/
 
 # Narzędzia
 .pytest_cache/
+.coverage
+htmlcov/
 .idea/
 .vscode/

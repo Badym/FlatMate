@@ -1,0 +1,36 @@
+{% from "macros/ui.html" import theme_toggle %}
+<nav class="navbar navbar-expand-lg fm-navbar sticky-top" aria-label="Główna nawigacja">
+  <div class="container">
+    <a class="navbar-brand fm-brand" href="{{ url_for('main.index') }}">
+      <span class="fm-logo" aria-hidden="true"><i class="bi bi-house-heart-fill"></i></span>
+      FlatMate
+    </a>
+
+    <div class="d-flex align-items-center gap-1 order-lg-last">
+      {{ theme_toggle() }}
+      {# Etap 4: menu zalogowanego użytkownika (mieszkania, profil, wylogowanie). #}
+      <a class="btn btn-ghost d-none d-sm-inline-flex" href="{{ url_for('auth.login') }}">Zaloguj się</a>
+      <a class="btn btn-primary d-none d-sm-inline-flex" href="{{ url_for('auth.register') }}">Załóż konto</a>
+      <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#fm-navbar" aria-controls="fm-navbar" aria-expanded="false" aria-label="Pokaż menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+
+    <div class="collapse navbar-collapse" id="fm-navbar">
+      <ul class="navbar-nav mx-lg-auto pt-3 pt-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#funkcje">Funkcje</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#jak-to-dziala">Jak to działa</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#bezpieczenstwo">Bezpieczeństwo</a></li>
+        {% if config.ENABLE_UI_PREVIEW %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('ui.components') }}">Komponenty <span class="fm-badge fm-badge-violet ms-1">dev</span></a>
+        </li>
+        {% endif %}
+        <li class="nav-item d-grid gap-2 d-sm-none py-3">
+          <a class="btn btn-neutral" href="{{ url_for('auth.login') }}">Zaloguj się</a>
+          <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Załóż konto</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
