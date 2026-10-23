@@ -1,0 +1,34 @@
+{#-
+  Wiersz zadania na liście. Style: css/components/task-item.css
+  task: {title, icon, due, status, mode, assignee, points}
+  interactive=False: makieta bez elementów fokusowalnych (np. w hero strony głównej).
+-#}
+{% from "components/avatar.html" import avatar %}
+{% from "components/badge.html" import status_badge, MODE_LABELS %}
+
+{% macro task_item(task, interactive=False) -%}
+{%- set mode_icon, mode_label = MODE_LABELS[task.mode] -%}
+<div class="fm-task fm-task-{{ task.status }}">
+  <span class="fm-icon-chip fm-icon-chip-sm"><i class="bi {{ 'bi-check-lg' if task.status == 'done' else task.icon }}" aria-hidden="true"></i></span>
+  <div class="fm-task-body">
+    <div class="fm-task-title">{{ task.title }}</div>
+    <div class="fm-task-meta">
+      <span><i class="bi bi-calendar-event" aria-hidden="true"></i>{{ task.due }}</span>
+      <span><i class="bi {{ mode_icon }}" aria-hidden="true"></i>{{ mode_label }}</span>
+      <span><i class="bi bi-lightning-charge" aria-hidden="true"></i>{{ task.points }} pkt</span>
+    </div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="d-none d-sm-inline-flex">{{ status_badge(task.status) }}</span>
+    {%- if task.status == "pool" %}
+      {%- if interactive %}
+      <button type="button" class="btn btn-soft btn-sm"><i class="bi bi-hand-index-thumb" aria-hidden="true"></i>Biorę</button>
+      {%- else %}
+      <span class="btn btn-soft btn-sm">Biorę</span>
+      {%- endif %}
+    {%- else %}
+      {{ avatar(task.assignee, "sm") }}
+    {%- endif %}
+  </div>
+</div>
+{%- endmacro %}

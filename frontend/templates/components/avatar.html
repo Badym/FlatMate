@@ -1,0 +1,19 @@
+{#-
+  Awatar z inicjałami w kolorze użytkownika; bez osoby: pusty awatar „do wzięcia”.
+  member: {name, initials, color}; size: "" | "sm" | "lg". Style: css/components/avatar.css
+-#}
+{% macro avatar(member, size="") -%}
+{%- set size_class = " fm-avatar-" ~ size if size else "" -%}
+{%- if member -%}
+<span class="fm-avatar{{ size_class }} u-color-{{ member.color }}" title="{{ member.name }}">{{ member.initials }}</span>
+{%- else -%}
+<span class="fm-avatar fm-avatar-empty{{ size_class }}" title="Do wzięcia"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
+{%- endif -%}
+{%- endmacro %}
+
+{#- Nachodzące na siebie awatary członków mieszkania. -#}
+{% macro avatar_stack(members, size="sm") -%}
+<div class="fm-avatar-stack">
+  {%- for member in members %}{{ avatar(member, size) }}{% endfor -%}
+</div>
+{%- endmacro %}

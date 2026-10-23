@@ -1,0 +1,7 @@
+{#- Logo i nazwa aplikacji, link do strony głównej. Style: css/components/brand.css -#}
+{% macro brand(extra_class="") -%}
+<a class="fm-brand{{ ' ' ~ extra_class if extra_class }}" href="{{ url_for('main.index') }}">
+  <span class="fm-logo" aria-hidden="true"><i class="bi bi-house-heart-fill"></i></span>
+  FlatMate
+</a>
+{%- endmacro %}

@@ -1,0 +1,380 @@
+/* Strona główna (pages/home.html): sekcje, hero, makieta, funkcje, kroki, bezpieczeństwo, CTA. */
+
+.fm-section {
+  padding: 5.5rem 0;
+}
+
+.fm-section-alt {
+  background: var(--fm-surface);
+  border-block: 1px solid var(--fm-border);
+}
+
+.fm-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fm-primary);
+}
+
+.fm-section-title {
+  font-size: clamp(1.8rem, 1.6vw + 1.2rem, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.fm-lead {
+  font-size: clamp(1.05rem, 0.5vw + 0.95rem, 1.22rem);
+  line-height: 1.65;
+  color: var(--fm-muted);
+  max-width: 38rem;
+}
+
+/* Hero */
+.fm-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 5.5rem 0 6rem;
+}
+
+.fm-hero::before {
+  content: "";
+  position: absolute;
+  inset: -25% -15% 0;
+  z-index: -2;
+  background:
+    radial-gradient(40rem 28rem at 12% 12%, rgba(99, 102, 241, 0.22), transparent 62%),
+    radial-gradient(36rem 26rem at 88% 4%, rgba(192, 38, 211, 0.16), transparent 62%),
+    radial-gradient(32rem 24rem at 62% 88%, rgba(20, 184, 166, 0.13), transparent 62%);
+}
+
+.fm-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--fm-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fm-grid-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 75%);
+}
+
+.fm-display {
+  font-size: clamp(2.5rem, 4.2vw + 1rem, 4.4rem);
+  font-weight: 800;
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+}
+
+.fm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.3rem 0.85rem 0.3rem 0.3rem;
+  border: 1px solid var(--fm-border);
+  border-radius: 999px;
+  background: var(--fm-surface);
+  box-shadow: var(--fm-shadow-sm);
+  color: var(--fm-muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.fm-pill:hover {
+  color: var(--fm-text);
+  border-color: rgba(var(--fm-primary-rgb), 0.35);
+}
+
+.fm-pill-tag {
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: var(--fm-gradient);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.fm-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  color: var(--fm-muted);
+  font-size: 0.92rem;
+}
+
+.fm-trust .bi {
+  margin-right: 0.35rem;
+  color: #16a34a;
+}
+
+/* Makieta aplikacji w hero */
+.fm-preview {
+  position: relative;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+.fm-preview-window {
+  overflow: hidden;
+  background: var(--fm-surface);
+  border: 1px solid var(--fm-border);
+  border-radius: 1.35rem;
+  box-shadow: var(--fm-shadow-lg);
+}
+
+.fm-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+  background: var(--fm-surface-2);
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.fm-preview-url {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: var(--fm-surface);
+  color: var(--fm-muted);
+  font-size: 0.75rem;
+}
+
+.fm-preview-url .bi {
+  margin-right: 0.3rem;
+  color: #16a34a;
+}
+
+.fm-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--fm-border);
+}
+
+.fm-dot-red { background: #f87171; }
+.fm-dot-amber { background: #fbbf24; }
+.fm-dot-green { background: #34d399; }
+
+.fm-preview-body {
+  padding: 1.25rem;
+}
+
+.fm-kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.fm-mini-stat {
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--fm-radius-sm);
+  background: var(--fm-surface-2);
+}
+
+.fm-mini-stat span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--fm-muted);
+}
+
+.fm-mini-stat strong {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.fm-floating {
+  position: absolute;
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(var(--fm-surface-rgb), 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--fm-border);
+  border-radius: var(--fm-radius);
+  box-shadow: var(--fm-shadow);
+  font-size: 0.88rem;
+  animation: fm-float 6s ease-in-out infinite;
+}
+
+@media (min-width: 768px) {
+  .fm-floating {
+    display: flex;
+  }
+}
+
+.fm-floating-points {
+  bottom: -1.75rem;
+  left: -2.5rem;
+}
+
+.fm-floating-rotation {
+  top: -1.6rem;
+  right: -1.5rem;
+  animation-delay: -3s;
+}
+
+.fm-floating-rotation .bi {
+  color: var(--fm-primary);
+}
+
+.fm-feature {
+  height: 100%;
+  padding: 1.75rem;
+}
+
+.fm-feature h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.12rem;
+}
+
+.fm-feature p {
+  margin: 0;
+  color: var(--fm-muted);
+}
+
+/* Kroki */
+.fm-step {
+  position: relative;
+  height: 100%;
+  padding: 1.75rem;
+}
+
+.fm-step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  background: var(--fm-gradient);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: var(--fm-glow);
+}
+
+.fm-step h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.12rem;
+}
+
+.fm-step p {
+  margin: 0;
+  color: var(--fm-muted);
+}
+
+/* Panel bezpieczeństwa (zawsze ciemny) */
+.fm-security {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(2rem, 4vw, 3.75rem);
+  border-radius: 1.75rem;
+  background: #0b0b1a;
+  color: #e8e9f1;
+  box-shadow: var(--fm-shadow-lg);
+}
+
+.fm-security::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(30rem 20rem at 0% 0%, rgba(99, 102, 241, 0.35), transparent 60%),
+    radial-gradient(26rem 18rem at 100% 100%, rgba(192, 38, 211, 0.25), transparent 60%);
+}
+
+.fm-security-item {
+  height: 100%;
+  padding: 1.25rem;
+  border-radius: var(--fm-radius);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fm-security-item h3 {
+  margin: 0.9rem 0 0.35rem;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.fm-security-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #a7aac2;
+}
+
+.fm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d4d6e8;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+}
+
+/* Wezwanie do działania */
+.fm-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(2.5rem, 5vw, 4rem) 1.5rem;
+  border-radius: 1.75rem;
+  background: var(--fm-gradient);
+  color: #fff;
+  text-align: center;
+  box-shadow: var(--fm-shadow-lg);
+}
+
+.fm-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 36px 36px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+}
+
+.fm-cta h2 {
+  color: #fff;
+}
+
+.fm-cta p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.fm-cta .btn-light {
+  --bs-btn-color: #3730a3;
+  --bs-btn-hover-color: #312e81;
+  --bs-btn-bg: #fff;
+  --bs-btn-hover-bg: #eef0ff;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  box-shadow: 0 10px 24px -10px rgba(15, 18, 34, 0.45);
+}
+
+.fm-cta .btn-outline-light {
+  --bs-btn-hover-color: #3730a3;
+  --bs-btn-border-color: rgba(255, 255, 255, 0.5);
+}

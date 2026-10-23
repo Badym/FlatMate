@@ -36,15 +36,15 @@ COPY . .
 RUN chown -R flatmate:flatmate /app
 USER flatmate
 
-CMD ["pytest", "--cov=app", "--cov-report=term-missing", "--cov-fail-under=80"]
+CMD ["pytest", "--cov=backend", "--cov-report=term-missing", "--cov-fail-under=80"]
 
 # ---------------------------------------------------------------------------
 # Etap produkcyjny: tylko kod aplikacji, użytkownik bez uprawnień roota
 # ---------------------------------------------------------------------------
 FROM base AS runtime
 
-COPY app ./app
-COPY migrations ./migrations
+COPY backend ./backend
+COPY frontend ./frontend
 COPY wsgi.py ./
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 

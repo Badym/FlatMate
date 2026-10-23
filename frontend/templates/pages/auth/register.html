@@ -1,0 +1,27 @@
+{#- Rejestracja (auth.register). -#}
+{% extends "layouts/auth.html" %}
+{% from "components/form_field.html" import form_field %}
+
+{% block title %}Rejestracja · FlatMate{% endblock %}
+{% block aside_headline %}Załóż mieszkanie i zaproś współlokatorów w minutę.{% endblock %}
+{% block aside_text %}Twórca mieszkania zostaje jego adminem: zaprasza osoby, akceptuje prośby i przypisuje zadania.{% endblock %}
+
+{% block form %}
+<h1 class="fm-auth-title">Załóż konto</h1>
+<p class="text-body-secondary mb-4">Darmowe konto, bez reklam. Zajmie Ci to mniej niż minutę.</p>
+
+<form method="post" action="{{ url_for('auth.register') }}" novalidate>
+  {{ form.hidden_tag() }}
+  {{ form_field(form.display_name, icon="bi-person", attrs={"autocomplete": "nickname", "placeholder": "np. Ola"}) }}
+  {{ form_field(form.email, icon="bi-envelope", attrs={"autocomplete": "email", "placeholder": "ty@przyklad.pl"}) }}
+  {{ form_field(form.password, icon="bi-lock", password_toggle=True, meter=True,
+                help="Minimum " ~ password_min_length ~ " znaków. Najłatwiej zapamiętać kilka losowych słów.",
+                attrs={"autocomplete": "new-password", "placeholder": "Co najmniej " ~ password_min_length ~ " znaków"}) }}
+  {{ form_field(form.password_confirm, icon="bi-shield-check", password_toggle=True, attrs={"autocomplete": "new-password", "placeholder": "Powtórz hasło"}) }}
+  <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Załóż konto <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+</form>
+
+<p class="text-center text-body-secondary mt-4 mb-0">
+  Masz już konto? <a class="fw-semibold" href="{{ url_for('auth.login') }}">Zaloguj się</a>
+</p>
+{% endblock %}

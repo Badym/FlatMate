@@ -1,0 +1,58 @@
+/* Awatary i paleta kolorów użytkowników (components/avatar.html). */
+
+.fm-avatar {
+  --fm-user-color: #64748b;
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--fm-user-color);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 2px var(--fm-surface);
+}
+
+.fm-avatar-sm {
+  width: 1.8rem;
+  height: 1.8rem;
+  font-size: 0.66rem;
+}
+
+.fm-avatar-lg {
+  width: 3rem;
+  height: 3rem;
+  font-size: 1rem;
+}
+
+.fm-avatar-empty {
+  background: transparent;
+  color: var(--fm-muted);
+  border: 1.5px dashed var(--fm-border);
+  box-shadow: none;
+}
+
+.fm-avatar-stack {
+  display: flex;
+}
+
+.fm-avatar-stack .fm-avatar + .fm-avatar {
+  margin-left: -0.45rem;
+}
+
+/* Paleta użytkowników – kolejność jak USER_COLORS w backend/core/constants.py */
+.u-color-0 { --fm-user-color: #4f46e5; }
+.u-color-1 { --fm-user-color: #7c3aed; }
+.u-color-2 { --fm-user-color: #c026d3; }
+.u-color-3 { --fm-user-color: #db2777; }
+.u-color-4 { --fm-user-color: #dc2626; }
+.u-color-5 { --fm-user-color: #ea580c; }
+.u-color-6 { --fm-user-color: #d97706; }
+.u-color-7 { --fm-user-color: #65a30d; }
+.u-color-8 { --fm-user-color: #16a34a; }
+.u-color-9 { --fm-user-color: #0d9488; }
+.u-color-10 { --fm-user-color: #0284c7; }
+.u-color-11 { --fm-user-color: #475569; }

@@ -37,7 +37,7 @@ pythonpath = ["."]
 addopts = "-ra --strict-markers"
 
 [tool.coverage.run]
-source = ["app"]
+source = ["backend"]
 branch = true
 
 [tool.coverage.report]
@@ -45,4 +45,4 @@ show_missing = true
 skip_covered = true
 
 [tool.bandit]
-exclude_dirs = ["tests", "migrations", ".venv"]
+exclude_dirs = ["tests", "backend/migrations", ".venv"]

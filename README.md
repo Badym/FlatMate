@@ -13,8 +13,8 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 
 ## Wybrany język i technologie
 
-- **Backend:** Python 3.13 + Flask, architektura warstwowa MVC (kontrolery, serwisy, repozytoria, modele)
-- **Frontend:** szablony Jinja2, Bootstrap 5.3, Bootstrap Icons, własny motyw z trybem jasnym i ciemnym
+- **Backend:** katalog `backend/` – Python 3.13 + Flask, architektura warstwowa MVC (kontrolery, serwisy, repozytoria, modele) ([zasady](backend/README.md))
+- **Frontend:** katalog `frontend/` – szablony Jinja2 podzielone na layouty, komponenty i strony, Bootstrap 5.3, Bootstrap Icons, własny motyw z trybem jasnym i ciemnym ([zasady](frontend/README.md))
 - **Baza danych:** PostgreSQL 17 w Dockerze, migracje Alembic (Flask-Migrate)
 - **Biblioteki:** Flask-SQLAlchemy, Flask-Login, Flask-WTF, Flask-Limiter, Pillow
 - **Narzędzia:** uv (zależności), Docker Compose, GitHub Actions (pytest, Bandit, pip-audit, gitleaks)

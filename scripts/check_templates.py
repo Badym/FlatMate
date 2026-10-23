@@ -50,11 +50,11 @@ def _scan(path: Path, rules: tuple[tuple[str, re.Pattern[str]], ...]) -> list[Vi
 
 
 def find_violations(project_root: Path) -> list[Violation]:
-    app_dir = project_root / "app"
+    """Sprawdza szablony w frontend/templates i moduły Pythona w backend."""
     violations: list[Violation] = []
-    for template in sorted((app_dir / "templates").rglob("*.html")):
+    for template in sorted((project_root / "frontend" / "templates").rglob("*.html")):
         violations.extend(_scan(template, TEMPLATE_RULES))
-    for module in sorted(app_dir.rglob("*.py")):
+    for module in sorted((project_root / "backend").rglob("*.py")):
         violations.extend(_scan(module, PYTHON_RULES))
     return violations
 

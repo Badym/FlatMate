@@ -1,0 +1,31 @@
+/* Klasy pomocnicze (zamiast atrybutów style, CSP: style-src 'self'). */
+
+.text-gradient {
+  background: var(--fm-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Szerokości pasków postępu co 5% (zamiast atrybutu style) */
+.fm-w-0 { width: 0; }
+.fm-w-5 { width: 5%; }
+.fm-w-10 { width: 10%; }
+.fm-w-15 { width: 15%; }
+.fm-w-20 { width: 20%; }
+.fm-w-25 { width: 25%; }
+.fm-w-30 { width: 30%; }
+.fm-w-35 { width: 35%; }
+.fm-w-40 { width: 40%; }
+.fm-w-45 { width: 45%; }
+.fm-w-50 { width: 50%; }
+.fm-w-55 { width: 55%; }
+.fm-w-60 { width: 60%; }
+.fm-w-65 { width: 65%; }
+.fm-w-70 { width: 70%; }
+.fm-w-75 { width: 75%; }
+.fm-w-80 { width: 80%; }
+.fm-w-85 { width: 85%; }
+.fm-w-90 { width: 90%; }
+.fm-w-95 { width: 95%; }
+.fm-w-100 { width: 100%; }

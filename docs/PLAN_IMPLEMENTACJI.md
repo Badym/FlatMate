@@ -33,8 +33,8 @@ Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpiecze�
 | D-16 | Baza i wdrożenie | **PostgreSQL 17 w Dockerze** (`docker-compose.yml`, port tylko na `127.0.0.1`); obraz aplikacji: gunicorn (1 proces, kilka wątków), użytkownik bez roota, system plików tylko do odczytu; za reverse proxy z HTTPS; host do potwierdzenia w etapie 9 (np. Render albo VPS z Caddy) | SR-3 wymaga HTTPS (`Secure`, HSTS); jeden proces oznacza wspólne liczniki limitera w pamięci |
 | D-17 | Czas | znaczniki czasu w UTC; terminy zadań (`due_date`) jako `Date` | proste porównania wygasania zaproszeń i blokad |
 | D-18 | Zależności | **uv**: `pyproject.toml` + `uv.lock` (zamiast `requirements.txt`); grupa `dev` dla testów i skanerów; `uv sync --locked` w Dockerze i CI | powtarzalne wersje z lockfile'a (T-12), jedno narzędzie do Pythona i zależności |
-| D-19 | Architektura | warstwy MVC: `controllers` (endpointy) → `services` (logika, transakcje) → `repositories` (zapytania ORM) → `models`; `forms` do walidacji, `templates` + `static` jako widok | kontroler nie dotyka bazy, repozytorium nie zatwierdza transakcji; łatwe testy warstw |
-| D-20 | Frontend | renderowanie po stronie serwera (Jinja2) + Bootstrap 5.3, Bootstrap Icons i font Inter trzymane lokalnie w `static/vendor`; własny motyw w `static/css/app.css` (tryb jasny i ciemny); biblioteka komponentów pod `/_ui/` (tylko dev) | bez zewnętrznych CDN i bez inline JS/CSS, więc CSP zostaje ścisły |
+| D-19 | Architektura | dwa katalogi główne: `backend/` i `frontend/`; w backendzie warstwy MVC: `controllers` (endpointy) → `services` (logika, transakcje) → `repositories` (zapytania ORM) → `models`, obok `forms` (walidacja), `security`, `core` (konfiguracja, rozszerzenia, stałe) i `migrations`; jedna aplikacja Flask renderująca widok z `frontend/` (bez osobnego API i SPA) | kontroler nie dotyka bazy, repozytorium nie zatwierdza transakcji; łatwe testy warstw |
+| D-20 | Frontend | cały widok w `frontend/`: szablony podzielone na `layouts/`, `components/` (makra Jinja2, jeden komponent na plik) i `pages/`; CSS i JS podzielone tak samo (`main.css` z importami, `main.js` jako moduł ES); renderowanie po stronie serwera (Jinja2) + Bootstrap 5.3, Bootstrap Icons i font Inter lokalnie w `static/vendor`; motyw jasny i ciemny; biblioteka komponentów pod `/_ui/` (tylko dev) | bez zewnętrznych CDN i bez inline JS/CSS, więc CSP zostaje ścisły |
 
 ---
 
@@ -58,18 +58,20 @@ Warstwy MVC (D-19). Pliki oznaczone `*` istnieją od etapu 2, pozostałe dochodz
 
 ```
 FlatMate/
-├── app/
+├── backend/                     *  cały backend w jednym miejscu (D-19, zasady: backend/README.md)
 │   ├── __init__.py              *  create_app(): konfiguracja, rozszerzenia, nagłówki, kontrolery, ProxyFix
-│   ├── config.py                *  DevelopmentConfig, TestingConfig, ProductionConfig (konfiguracja z .env)
-│   ├── extensions.py            *  db, migrate, csrf, limiter, login_manager, PRAGMA foreign_keys (SQLite)
-│   ├── constants.py             *  USER_COLORS (12 kolorów, D-6), limity długości pól
+│   ├── core/
+│   │   ├── config.py            *  DevelopmentConfig, TestingConfig, ProductionConfig (konfiguracja z .env)
+│   │   ├── extensions.py        *  db, migrate, csrf, limiter, login_manager, PRAGMA foreign_keys (SQLite)
+│   │   └── constants.py         *  USER_COLORS (12 kolorów, D-6), limity długości pól
+│   ├── demo_data.py             *  przykładowe dane do makiet (/ i /_ui/)
 │   ├── audit.py                    logger zdarzeń bezpieczeństwa (etap 3)
 │   ├── cli.py                      flask seed-demo (etap 3)
 │   ├── controllers/             *  C – endpointy (blueprinty), bez logiki i zapytań
 │   │   ├── main_controller.py   *  /, /health
 │   │   ├── auth_controller.py   *  /login, /register, /logout
 │   │   ├── ui_controller.py     *  /_ui/ – biblioteka komponentów (tylko dev)
-│   │   ├── errors.py            *  strony błędów 400–500
+│   │   ├── error_controller.py  *  strony błędów 400–500
 │   │   ├── profile_controller.py   etap 4
 │   │   ├── flats_controller.py     etap 5 (mieszkania, członkowie, zaproszenia)
 │   │   ├── tasks_controller.py     etapy 6–7
@@ -88,20 +90,26 @@ FlatMate/
 │   │   └── base.py              *  DeclarativeBase z konwencją nazw ograniczeń (Alembic)
 │   ├── forms/                   *  WTForms: walidacja i CSRF
 │   ├── security/                *  headers.py (CSP i nagłówki); dekoratory dostępu i is_safe_next (etapy 3–4)
-│   ├── templates/               *  V – Jinja2
+│   └── migrations/              *  Alembic (Flask-Migrate), wersje od etapu 3
+├── frontend/                    *  V – cały widok w jednym miejscu (D-20, zasady: frontend/README.md)
+│   ├── templates/
 │   │   ├── layouts/             *  base.html, auth.html
-│   │   ├── partials/            *  navbar, footer, flash
-│   │   ├── macros/              *  ui.html (awatar, odznaki, zadanie), forms.html (pole formularza)
-│   │   └── main/ auth/ errors/ ui/  * 
+│   │   ├── components/          *  makra Jinja2, jeden komponent na plik (brand, navbar, footer,
+│   │   │                           theme_toggle, flash_messages, form_field, avatar, badge,
+│   │   │                           task_item, stat_card, empty_state)
+│   │   └── pages/               *  home.html, auth/, errors/, ui/ (później flats/, tasks/, calendar/, profile/)
 │   └── static/
-│       ├── css/app.css          *  motyw (tokeny, tryb ciemny, komponenty)
-│       ├── js/                  *  theme.js (motyw przed renderem), app.js (zachowania przez data-fm-*)
-│       ├── vendor/              *  Bootstrap, Bootstrap Icons, Inter (D-20)
+│       ├── css/                 *  main.css (importy) + base/, components/, layouts/, pages/
+│       ├── js/                  *  theme-init.js (motyw w <head>), main.js (moduł ES) + components/
+│       ├── img/                 *  favicon.svg
+│       ├── vendor/              *  Bootstrap, Bootstrap Icons, Inter
 │       └── uploads/                awatary, w .gitignore (etap 4, wolumen Dockera)
-├── migrations/                  *  Alembic (Flask-Migrate), wersje od etapu 3
 ├── docker/entrypoint.sh         *  db upgrade + start gunicorna
 ├── scripts/check_templates.py   *  kontrola szablonów w CI (|safe, Markup, inline JS/style)
-├── tests/                       *  pytest (konfiguracja, nagłówki, błędy, formularze, repozytoria)
+├── tests/                       *  pytest; conftest.py wspólny
+│   ├── backend/                 *  konfiguracja, strony i healthcheck, nagłówki, błędy, formularze, repozytoria
+│   ├── frontend/                *  struktura frontend/ (szablony, importy CSS/JS, paleta kolorów)
+│   └── scripts/                 *  skrypt kontroli szablonów
 ├── .github/                     *  workflows/ci.yml, dependabot.yml
 ├── .zap/automation.yaml            plan skanu ZAP z logowaniem (etap 9)
 ├── Dockerfile                   *  etapy base → test → runtime (uv sync --locked)
@@ -118,7 +126,7 @@ FlatMate/
 
 Na podstawie `diagram_bazy_danych.png`. Diagram podaje tylko klucze, a poniżej są uzupełnione pola. W etapie 3 trzeba zaktualizować diagram o `task.parent_task_id` i `task_type.flat_id`.
 
-Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lokalne mogą iść na SQLite w pamięci, który robi to dopiero po `PRAGMA foreign_keys=ON`; ten event `connect` jest już w `extensions.py`. Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
+Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lokalne mogą iść na SQLite w pamięci, który robi to dopiero po `PRAGMA foreign_keys=ON`; ten event `connect` jest już w `backend/core/extensions.py`. Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
 
 ### `user`
 | Pole | Typ | Uwagi |
@@ -326,11 +334,12 @@ Kalendarz robimy bez zewnętrznej biblioteki JS, żeby utrzymać prosty CSP. Sia
 
 ## 6. Szablony i UI
 
-- `base.html`: Bootstrap 5 (lokalnie w `static/vendor`), navbar z wyborem mieszkania, komunikaty `flash`.
+- Każdy nowy ekran to strona w `frontend/templates/pages/` złożona z komponentów (`components/`); powtarzający się fragment HTML staje się nowym komponentem. Zasady i lista komponentów: [frontend/README.md](../frontend/README.md).
+- `layouts/base.html`: Bootstrap 5 (lokalnie w `static/vendor`), navbar z wyborem mieszkania, komunikaty `flash`.
 - Pulpit mieszkania: „Moje zadania”, „Pula do wzięcia”, zaległe, ranking punktów członków.
 - Przyciski akcji („Biorę”, „Wykonane”, „Usuń”) to małe formularze POST z CSRF, bez linków GET.
 - Potwierdzenia akcji destrukcyjnych przez osobną stronę lub modal Bootstrapa (JS z pliku, nie inline).
-- Kolor użytkownika: `PALETTE` w `constants.py` i odpowiadające mu klasy `.u-color-0` … `.u-color-11` w `static/css`. W formularzu profilu wybór z listy, a `color_index` jest walidowany zakresem 0–11 (D-6).
+- Kolor użytkownika: `USER_COLORS` w `backend/core/constants.py` i odpowiadające mu klasy `.u-color-0` … `.u-color-11` w `frontend/static/css/components/avatar.css` (zgodność pilnuje test). W formularzu profilu wybór z listy, a `color_index` jest walidowany zakresem 0–11 (D-6).
 - Wystąpienia „planowane” w kalendarzu są wyróżnione (np. przerywana ramka), żeby było widać, że nie istnieją jeszcze w bazie.
 
 ---
@@ -359,7 +368,7 @@ Kluczowe scenariusze:
 12. **Członkowie:** przekazanie roli zostawia jednego admina; admin nie wychodzi bez przekazania roli; jedyny członek po „Opuść” trafia do usunięcia mieszkania; `remove_member` oddaje zadania do puli i usuwa osobę z rotacji; usunięcie mieszkania kasuje zadania, zaproszenia i członkostwa (kaskady z włączonym `PRAGMA foreign_keys`).
 13. **Logi:** nieudane logowanie emituje zdarzenie (`caplog`), a w logach nie ma hasła ani tokenu.
 
-Cel pokrycia: **≥ 80%** (`pytest --cov=app --cov-fail-under=80`).
+Cel pokrycia: **≥ 80%** (`pytest --cov=backend --cov-fail-under=80`).
 
 ---
 
@@ -371,8 +380,8 @@ Każdy job instaluje zależności przez `astral-sh/setup-uv` i `uv sync --locked
 
 | Job | Polecenie | Blokuje merge |
 | --- | --- | --- |
-| tests | `uv run pytest --cov=app --cov-fail-under=80` na usłudze PostgreSQL 17 | tak |
-| bandit (SAST) | `uv run bandit -c pyproject.toml -r app -ll` | tak |
+| tests | `uv run pytest --cov=backend --cov-fail-under=80` na usłudze PostgreSQL 17 | tak |
+| bandit (SAST) | `uv run bandit -c pyproject.toml -r backend -ll` | tak |
 | pip-audit | `uv export --frozen --no-dev` → `uv run pip-audit --strict --require-hashes -r …` (dokładnie wersje z `uv.lock`) | tak |
 | gitleaks | `gitleaks/gitleaks-action` | tak |
 | templates | `uv run --no-project python scripts/check_templates.py`: błąd przy `|safe`, `Markup(`, inline `<script>` bez `src`, atrybutach `on*=`, `style=` i adresach `javascript:` | tak |
@@ -465,3 +474,5 @@ uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja 
   - frontend z własnym motywem i biblioteką komponentów (D-20),
   - poprawka CSP: `img-src 'self' data:`, bo bez tego nie działają ikony SVG z CSS Bootstrapa,
   - CI oparte na uv, z testami na PostgreSQL i budową obrazu Dockera.
+- **v4 (2026-10-23):** porządek we frontendzie: cały widok w `frontend/` (szablony `layouts/`, `components/`, `pages/`; CSS i JS podzielone na komponenty), zasady w `frontend/README.md`, testy struktury w `tests/frontend/test_structure.py` (D-20).
+- **v5 (2026-10-23):** porządek w backendzie: pakiet `app/` → `backend/`, konfiguracja, rozszerzenia i stałe w `backend/core/`, migracje w `backend/migrations/`, dane makiet w `backend/demo_data.py`, `error_controller.py`; testy podzielone na `tests/backend/`, `tests/frontend/`, `tests/scripts/`; zasady warstw w `backend/README.md` (D-19).

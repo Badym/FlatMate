@@ -5,7 +5,7 @@
 Dockerfile text eol=lf
 
 # Biblioteki zewnętrzne bajt w bajt jak w paczce (sumy SHA-256 z jsDelivr).
-app/static/vendor/** -text
+frontend/static/vendor/** -text
 
 *.png binary
 *.pdf binary
