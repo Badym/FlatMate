@@ -1,14 +1,18 @@
-"""Klasa bazowa encji ORM."""
+"""Klasa bazowa encji ORM i wspólne kolumny."""
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import MetaData
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from backend.models.types import UTCDateTime, utcnow
 
 # Stałe nazwy ograniczeń, żeby migracje Alembica były przewidywalne.
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "uq": "uq_%(table_name)s_%(column_0_N_name)s",
     "ck": "ck_%(table_name)s_%(constraint_name)s",
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     "pk": "pk_%(table_name)s",
@@ -17,3 +21,9 @@ NAMING_CONVENTION = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+
+class TimestampMixin:
+    """Czas utworzenia rekordu (UTC)."""
+
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
