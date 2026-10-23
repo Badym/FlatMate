@@ -1,0 +1,38 @@
+/*
+ * FlatMate – punkt wejścia stylów (ładowany po Bootstrapie w layouts/base.html).
+ *
+ * Każdy komponent z templates/components/ ma swój plik w components/.
+ * Kolejność importów to kolejność kaskady: tokeny → globalne → komponenty →
+ * layouty → strony → klasy pomocnicze. Nowy plik dopisz w odpowiedniej grupie.
+ *
+ * Bez atrybutów style w HTML (CSP: style-src 'self'): kolory użytkowników
+ * i szerokości pasków to klasy (.u-color-N, .fm-w-N).
+ */
+
+@import url("base/fonts.css");
+@import url("base/tokens.css");
+@import url("base/global.css");
+
+@import url("components/button.css");
+@import url("components/form-field.css");
+@import url("components/brand.css");
+@import url("components/navbar.css");
+@import url("components/theme-toggle.css");
+@import url("components/footer.css");
+@import url("components/flash.css");
+@import url("components/card.css");
+@import url("components/avatar.css");
+@import url("components/badge.css");
+@import url("components/task-item.css");
+@import url("components/ranking.css");
+@import url("components/calendar.css");
+@import url("components/empty-state.css");
+
+@import url("layouts/auth.css");
+
+@import url("pages/home.css");
+@import url("pages/error.css");
+@import url("pages/ui-components.css");
+
+@import url("base/utilities.css");
+@import url("base/animations.css");

@@ -1,0 +1,79 @@
+/* Tokeny projektu (--fm-*) i mapowanie na zmienne Bootstrapa; tryb ciemny przez [data-bs-theme="dark"]. */
+
+:root,
+[data-bs-theme="light"] {
+  --fm-font: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --fm-primary: #4f46e5;
+  --fm-primary-rgb: 79, 70, 229;
+  --fm-primary-hover: #4338ca;
+  --fm-primary-strong: #3730a3;
+  --fm-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 55%, #c026d3 100%);
+  --fm-bg: #f6f7fb;
+  --fm-bg-rgb: 246, 247, 251;
+  --fm-surface: #ffffff;
+  --fm-surface-rgb: 255, 255, 255;
+  --fm-surface-2: #f1f2f8;
+  --fm-border: #e4e6ef;
+  --fm-text: #0f1222;
+  --fm-muted: #5d6279;
+  --fm-shadow-sm: 0 1px 2px rgba(15, 18, 34, 0.06), 0 1px 3px rgba(15, 18, 34, 0.04);
+  --fm-shadow: 0 12px 32px -14px rgba(15, 18, 34, 0.2), 0 4px 10px -6px rgba(15, 18, 34, 0.08);
+  --fm-shadow-lg: 0 40px 80px -30px rgba(49, 46, 129, 0.35), 0 16px 32px -16px rgba(15, 18, 34, 0.16);
+  --fm-glow: 0 10px 24px -10px rgba(79, 70, 229, 0.65);
+  --fm-grid-line: rgba(15, 18, 34, 0.05);
+  --fm-radius: 1rem;
+  --fm-radius-sm: 0.7rem;
+  --fm-ring: 0 0 0 0.25rem rgba(var(--fm-primary-rgb), 0.18);
+}
+
+[data-bs-theme="dark"] {
+  --fm-primary: #8b93ff;
+  --fm-primary-rgb: 139, 147, 255;
+  --fm-primary-hover: #a9afff;
+  --fm-primary-strong: #c7cbff;
+  --fm-bg: #0a0b12;
+  --fm-bg-rgb: 10, 11, 18;
+  --fm-surface: #11131d;
+  --fm-surface-rgb: 17, 19, 29;
+  --fm-surface-2: #181b28;
+  --fm-border: rgba(255, 255, 255, 0.08);
+  --fm-text: #e8e9f1;
+  --fm-muted: #9a9db4;
+  --fm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --fm-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.7);
+  --fm-shadow-lg: 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --fm-glow: 0 10px 28px -10px rgba(124, 58, 237, 0.7);
+  --fm-grid-line: rgba(255, 255, 255, 0.04);
+}
+
+/* Zmienne Bootstrapa wyliczane z tokenów (także w zagnieżdżonych sekcjach z data-bs-theme). */
+:root,
+[data-bs-theme] {
+  --bs-body-font-family: var(--fm-font);
+  --bs-body-bg: var(--fm-bg);
+  --bs-body-bg-rgb: var(--fm-bg-rgb);
+  --bs-body-color: var(--fm-text);
+  --bs-emphasis-color: var(--fm-text);
+  --bs-heading-color: var(--fm-text);
+  --bs-secondary-color: var(--fm-muted);
+  --bs-tertiary-color: var(--fm-muted);
+  --bs-border-color: var(--fm-border);
+  --bs-border-color-translucent: var(--fm-border);
+  --bs-secondary-bg: var(--fm-surface-2);
+  --bs-tertiary-bg: var(--fm-surface-2);
+  --bs-primary: var(--fm-primary);
+  --bs-primary-rgb: var(--fm-primary-rgb);
+  --bs-primary-text-emphasis: var(--fm-primary-strong);
+  --bs-primary-bg-subtle: rgba(var(--fm-primary-rgb), 0.12);
+  --bs-primary-border-subtle: rgba(var(--fm-primary-rgb), 0.35);
+  --bs-link-color: var(--fm-primary);
+  --bs-link-color-rgb: var(--fm-primary-rgb);
+  --bs-link-hover-color: var(--fm-primary-hover);
+  --bs-link-hover-color-rgb: var(--fm-primary-rgb);
+  --bs-focus-ring-color: rgba(var(--fm-primary-rgb), 0.25);
+  --bs-border-radius: 0.75rem;
+  --bs-border-radius-sm: 0.5rem;
+  --bs-border-radius-lg: 1rem;
+  --bs-border-radius-xl: 1.25rem;
+}

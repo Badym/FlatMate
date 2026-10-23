@@ -1,0 +1,37 @@
+/* Pasek nawigacji (components/navbar.html). */
+
+.fm-navbar {
+  --bs-navbar-padding-y: 0.8rem;
+  background-color: rgba(var(--fm-bg-rgb), 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.fm-navbar .nav-link {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--fm-muted);
+  border-radius: 0.6rem;
+}
+
+@media (min-width: 992px) {
+  .fm-navbar .nav-link {
+    padding-inline: 0.85rem;
+  }
+}
+
+.fm-navbar .nav-link:hover,
+.fm-navbar .nav-link:focus-visible,
+.fm-navbar .nav-link.active {
+  color: var(--fm-text);
+}
+
+.navbar-toggler {
+  border: 0;
+  padding: 0.4rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: var(--fm-ring);
+}

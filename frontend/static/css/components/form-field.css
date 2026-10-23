@@ -1,0 +1,112 @@
+/* Pola formularzy, ikona w polu, wskaźnik siły hasła (components/form_field.html). */
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.form-control,
+.form-select {
+  background-color: var(--fm-surface);
+  border-color: var(--fm-border);
+  border-radius: var(--fm-radius-sm);
+  padding: 0.65rem 0.9rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.form-control-lg,
+.form-select-lg {
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.8rem;
+}
+
+.form-control::placeholder {
+  color: var(--fm-muted);
+  opacity: 0.65;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--fm-surface);
+  border-color: rgba(var(--fm-primary-rgb), 0.6);
+  box-shadow: var(--fm-ring);
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.15);
+}
+
+.form-check-input {
+  border-color: var(--fm-border);
+}
+
+.form-check-input:checked {
+  background-color: var(--fm-primary);
+  border-color: var(--fm-primary);
+}
+
+.form-check-input:focus {
+  border-color: rgba(var(--fm-primary-rgb), 0.6);
+  box-shadow: var(--fm-ring);
+}
+
+.form-text {
+  color: var(--fm-muted);
+}
+
+.invalid-feedback {
+  font-weight: 500;
+}
+
+/* Pole z ikoną po lewej i opcjonalnym przyciskiem po prawej */
+.fm-input-icon {
+  position: relative;
+}
+
+.fm-input-icon > .bi {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: var(--fm-muted);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.fm-input-icon > .form-control {
+  padding-left: 2.75rem;
+}
+
+.fm-input-icon.has-action > .form-control {
+  padding-right: 3.25rem;
+  background-image: none;
+}
+
+.fm-input-icon > .fm-input-action {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  transform: translateY(-50%);
+  z-index: 3;
+}
+
+/* Wskaźnik siły hasła */
+.fm-meter {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.fm-meter > span {
+  height: 0.3rem;
+  border-radius: 999px;
+  background: var(--fm-surface-2);
+  transition: background-color 0.2s ease;
+}
+
+.fm-meter[data-level="1"] > span:nth-child(-n + 1) { background: #dc2626; }
+.fm-meter[data-level="2"] > span:nth-child(-n + 2) { background: #d97706; }
+.fm-meter[data-level="3"] > span:nth-child(-n + 3) { background: #16a34a; }
+.fm-meter[data-level="4"] > span:nth-child(-n + 4) { background: #16a34a; }

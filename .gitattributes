@@ -1,0 +1,13 @@
+* text=auto
+
+# Skrypty uruchamiane w kontenerach Linuksa muszą mieć końce linii LF.
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+# Biblioteki zewnętrzne bajt w bajt jak w paczce (sumy SHA-256 z jsDelivr).
+frontend/static/vendor/** -text
+
+*.png binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

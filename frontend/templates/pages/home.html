@@ -1,0 +1,184 @@
+{#- Strona główna (main.index). Style: css/pages/home.css -#}
+{% extends "layouts/base.html" %}
+{% from "components/avatar.html" import avatar_stack %}
+{% from "components/task_item.html" import task_item %}
+
+{% set features = [
+  ("bi-arrow-repeat", "", "Zadania cykliczne z rotacją", "Codziennie, co tydzień lub co miesiąc. Kolejne wystąpienie samo trafia do następnej osoby w kolejce."),
+  ("bi-inboxes", "fm-chip-violet", "Pula „do wzięcia”", "Zadania bez przypisanej osoby czekają w puli. Jedno kliknięcie „Biorę” i wiadomo, kto się tym zajmie."),
+  ("bi-trophy", "fm-chip-amber", "Punkty za wykonane zadania", "Każde zadanie ma swoją wagę, a ranking pokazuje czarno na białym, kto ile robi dla mieszkania."),
+  ("bi-calendar3-week", "fm-chip-teal", "Wspólny kalendarz", "Wszystkie terminy w jednym widoku miesiąca, w kolorach domowników – razem z zaplanowanymi zadaniami cyklicznymi."),
+  ("bi-person-check", "fm-chip-sky", "Zaproszenia z akceptacją", "Link zaproszenia wygasa po 7 dniach, a każdą nową osobę zatwierdza admin mieszkania."),
+  ("bi-shield-check", "fm-chip-rose", "Pełna izolacja mieszkań", "Każde mieszkanie to osobna przestrzeń. Serwer sprawdza członkostwo przy każdym żądaniu."),
+] %}
+
+{% set steps = [
+  ("Załóż mieszkanie", "Rejestrujesz się i tworzysz mieszkanie. Automatycznie zostajesz jego adminem."),
+  ("Zaproś współlokatorów", "Wysyłasz link zaproszenia, a potem akceptujesz prośby o dołączenie."),
+  ("Dzielcie obowiązki", "Dodajecie zadania jednorazowe i cykliczne, bierzecie je z puli i zbieracie punkty."),
+] %}
+
+{% set safeguards = [
+  ("bi-key", "Hasła jako hash z solą", "Minimum 12 znaków, limit prób logowania i ogólny komunikat błędu."),
+  ("bi-shield-lock", "Ochrona formularzy", "Token CSRF w każdym formularzu, Content-Security-Policy i escapowanie treści."),
+  ("bi-building-lock", "Izolacja danych", "Kontrola członkostwa i roli po stronie serwera dla każdej akcji."),
+  ("bi-git", "Skanowanie w CI", "Każdy pull request przechodzi testy oraz analizę kodu, zależności i sekretów."),
+] %}
+
+{% block content %}
+<section class="fm-hero">
+  <div class="container">
+    <div class="row align-items-center gy-5 gx-lg-5">
+      <div class="col-lg-6 fm-fade-up">
+        <a class="fm-pill" href="#funkcje">
+          <span class="fm-pill-tag">Nowość</span>
+          Zadania cykliczne z automatyczną rotacją
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+        <h1 class="fm-display mt-4">Wspólne mieszkanie, <span class="text-gradient">uczciwy podział</span> obowiązków.</h1>
+        <p class="fm-lead mt-4">FlatMate pamięta, czyja jest kolej na łazienkę, śmieci i zakupy. Zadania cykliczne same przechodzą na kolejną osobę, a każde mieszkanie widzi wyłącznie swoje dane.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4 pt-2">
+          <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">Załóż mieszkanie <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          <a class="btn btn-neutral btn-lg" href="#jak-to-dziala"><i class="bi bi-play-circle" aria-hidden="true"></i>Jak to działa</a>
+        </div>
+        <ul class="fm-trust list-unstyled mt-4 pt-2 mb-0">
+          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Bez reklam i opłat</li>
+          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Dane tylko dla domowników</li>
+          <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Wygodnie na telefonie</li>
+        </ul>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="fm-preview" aria-hidden="true">
+          <div class="fm-preview-window">
+            <div class="fm-preview-bar">
+              <span class="fm-dot fm-dot-red"></span>
+              <span class="fm-dot fm-dot-amber"></span>
+              <span class="fm-dot fm-dot-green"></span>
+              <span class="fm-preview-url"><i class="bi bi-lock-fill"></i>FlatMate · pulpit mieszkania</span>
+            </div>
+            <div class="fm-preview-body">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <div class="fm-kicker">Mieszkanie</div>
+                  <div class="h5 mb-0 fw-bold">Mickiewicza 12/4</div>
+                </div>
+                {{ avatar_stack(preview_members) }}
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-4"><div class="fm-mini-stat"><span>Na dziś</span><strong>2</strong></div></div>
+                <div class="col-4"><div class="fm-mini-stat"><span>Do wzięcia</span><strong>3</strong></div></div>
+                <div class="col-4"><div class="fm-mini-stat"><span>Twoje punkty</span><strong class="text-gradient">64</strong></div></div>
+              </div>
+              {% for task in preview_tasks %}{{ task_item(task) }}{% endfor %}
+            </div>
+          </div>
+
+          <div class="fm-floating fm-floating-points">
+            <span class="fm-icon-chip fm-icon-chip-sm fm-chip-green"><i class="bi bi-trophy"></i></span>
+            <div>
+              <div class="fw-semibold">+15 pkt dla Oli</div>
+              <div class="small text-body-secondary">Łazienka posprzątana</div>
+            </div>
+          </div>
+          <div class="fm-floating fm-floating-rotation">
+            <i class="bi bi-arrow-repeat"></i>
+            <span>Następna w kolejce: <strong>Marta</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="fm-section fm-section-alt" id="funkcje">
+  <div class="container">
+    <div class="text-center mx-auto mb-5">
+      <span class="fm-eyebrow">Funkcje</span>
+      <h2 class="fm-section-title">Wszystko, czego potrzebuje wspólne mieszkanie</h2>
+      <p class="fm-lead mx-auto mt-3">Bez arkuszy, karteczek na lodówce i ustaleń, które giną w grupowym czacie.</p>
+    </div>
+    <div class="row g-4">
+      {% for icon, chip, title, text in features %}
+      <div class="col-md-6 col-lg-4">
+        <article class="fm-card fm-card-hover fm-feature">
+          <span class="fm-icon-chip {{ chip }}"><i class="bi {{ icon }}" aria-hidden="true"></i></span>
+          <h3>{{ title }}</h3>
+          <p>{{ text }}</p>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="fm-section" id="jak-to-dziala">
+  <div class="container">
+    <div class="row align-items-end mb-5 g-3">
+      <div class="col-lg-7">
+        <span class="fm-eyebrow">Jak to działa</span>
+        <h2 class="fm-section-title mb-0">Trzy kroki do porządku w mieszkaniu</h2>
+      </div>
+      <div class="col-lg-5">
+        <p class="fm-lead mb-0">Konfiguracja zajmuje kilka minut, a potem FlatMate sam pilnuje kolejki.</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      {% for title, text in steps %}
+      <div class="col-md-4">
+        <div class="fm-card fm-step">
+          <span class="fm-step-number">{{ loop.index }}</span>
+          <h3>{{ title }}</h3>
+          <p>{{ text }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="pb-5" id="bezpieczenstwo">
+  <div class="container">
+    <div class="fm-security" data-bs-theme="dark">
+      <div class="row g-5 align-items-center">
+        <div class="col-lg-5">
+          <span class="fm-eyebrow">Bezpieczeństwo</span>
+          <h2 class="fm-section-title text-white">Bezpieczeństwo wbudowane od pierwszego commita</h2>
+          <p class="text-body-secondary mt-3">FlatMate powstaje w procesie DevSecOps: wymagania bezpieczeństwa, model zagrożeń i automatyczne skanowanie przy każdej zmianie kodu.</p>
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            {% for tool in ["pytest", "Bandit", "pip-audit", "gitleaks", "OWASP ZAP"] %}
+            <span class="fm-tag"><i class="bi bi-check2" aria-hidden="true"></i>{{ tool }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="row g-3">
+            {% for icon, title, text in safeguards %}
+            <div class="col-sm-6">
+              <div class="fm-security-item">
+                <span class="fm-icon-chip fm-icon-chip-sm"><i class="bi {{ icon }}" aria-hidden="true"></i></span>
+                <h3>{{ title }}</h3>
+                <p>{{ text }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="fm-section pt-4">
+  <div class="container">
+    <div class="fm-cta">
+      <h2 class="fm-section-title">Koniec z kłótniami o zmywanie.</h2>
+      <p class="fm-lead mx-auto mt-3">Załóż mieszkanie w minutę i zaproś współlokatorów linkiem.</p>
+      <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+        <a class="btn btn-light btn-lg" href="{{ url_for('auth.register') }}">Załóż darmowe konto <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        <a class="btn btn-outline-light btn-lg" href="{{ url_for('auth.login') }}">Mam już konto</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

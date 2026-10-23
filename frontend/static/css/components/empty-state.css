@@ -1,0 +1,16 @@
+/* Pusty stan listy. */
+
+/* Pusty stan */
+.fm-empty {
+  padding: 2.75rem 1.5rem;
+  border: 1.5px dashed var(--fm-border);
+  border-radius: var(--fm-radius);
+  background: var(--fm-surface);
+  text-align: center;
+}
+
+.fm-empty p {
+  max-width: 26rem;
+  margin: 0.4rem auto 1.25rem;
+  color: var(--fm-muted);
+}

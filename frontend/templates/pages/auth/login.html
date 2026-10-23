@@ -1,0 +1,21 @@
+{#- Logowanie (auth.login). -#}
+{% extends "layouts/auth.html" %}
+{% from "components/form_field.html" import form_field %}
+
+{% block title %}Logowanie · FlatMate{% endblock %}
+
+{% block form %}
+<h1 class="fm-auth-title">Witaj ponownie</h1>
+<p class="text-body-secondary mb-4">Zaloguj się, aby zobaczyć zadania swojego mieszkania.</p>
+
+<form method="post" action="{{ url_for('auth.login') }}" novalidate>
+  {{ form.hidden_tag() }}
+  {{ form_field(form.email, icon="bi-envelope", attrs={"autocomplete": "email", "placeholder": "ty@przyklad.pl"}) }}
+  {{ form_field(form.password, icon="bi-lock", password_toggle=True, attrs={"autocomplete": "current-password", "placeholder": "Twoje hasło"}) }}
+  <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Zaloguj się <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+</form>
+
+<p class="text-center text-body-secondary mt-4 mb-0">
+  Nie masz konta? <a class="fw-semibold" href="{{ url_for('auth.register') }}">Załóż je za darmo</a>
+</p>
+{% endblock %}
