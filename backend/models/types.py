@@ -17,11 +17,10 @@ def utcnow() -> datetime:
 
 
 class UTCDateTime(TypeDecorator[datetime]):
-    """Znacznik czasu zawsze w UTC ze strefą czasową.
+    """Znacznik czasu ``timestamptz`` zawsze w UTC.
 
-    PostgreSQL przechowuje ``timestamptz``. SQLite (szybkie testy lokalne) nie
-    ma stref czasowych, więc zapisujemy tam czas UTC bez strefy i dopisujemy
-    ją przy odczycie. Dzięki temu porównania dat działają tak samo na obu bazach.
+    Odrzuca czas bez strefy (łatwy do pomylenia z czasem lokalnym) i przy
+    odczycie zamienia strefę na UTC, niezależnie od ustawień sesji bazy.
     """
 
     impl = DateTime(timezone=True)
@@ -32,13 +31,12 @@ class UTCDateTime(TypeDecorator[datetime]):
             return None
         if value.tzinfo is None:
             raise ValueError("Znacznik czasu musi mieć strefę czasową; użyj utcnow().")
-        value = value.astimezone(UTC)
-        return value.replace(tzinfo=None) if dialect.name == "sqlite" else value
+        return value.astimezone(UTC)
 
     def process_result_value(self, value: datetime | None, dialect: Dialect) -> datetime | None:
         if value is None:
             return None
-        return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+        return value.astimezone(UTC)
 
 
 def render_alembic_type(type_: str, obj: Any, _autogen_context: Any) -> str | bool:

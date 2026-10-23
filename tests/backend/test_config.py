@@ -84,3 +84,10 @@ def test_trust_proxy_flag(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TRUST_PROXY", "1")
 
     assert config_module.TestingConfig().TRUST_PROXY is True
+
+
+def test_testing_requires_test_database(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TEST_DATABASE_URL", raising=False)
+
+    with pytest.raises(RuntimeError, match="TEST_DATABASE_URL"):
+        config_module.TestingConfig()

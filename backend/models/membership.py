@@ -29,7 +29,6 @@ class Membership(TimestampMixin, Base):
             "flat_id",
             unique=True,
             postgresql_where=text("role = 'admin'"),
-            sqlite_where=text("role = 'admin'"),
         ),
     )
 

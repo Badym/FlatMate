@@ -84,7 +84,7 @@ def upgrade():
     )
     with op.batch_alter_table('memberships', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_memberships_flat_id'), ['flat_id'], unique=False)
-        batch_op.create_index('uq_memberships_one_admin_per_flat', ['flat_id'], unique=True, postgresql_where=sa.text("role = 'admin'"), sqlite_where=sa.text("role = 'admin'"))
+        batch_op.create_index('uq_memberships_one_admin_per_flat', ['flat_id'], unique=True, postgresql_where=sa.text("role = 'admin'"))
 
     op.create_table('task_types',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -177,7 +177,7 @@ def downgrade():
 
     op.drop_table('task_types')
     with op.batch_alter_table('memberships', schema=None) as batch_op:
-        batch_op.drop_index('uq_memberships_one_admin_per_flat', postgresql_where=sa.text("role = 'admin'"), sqlite_where=sa.text("role = 'admin'"))
+        batch_op.drop_index('uq_memberships_one_admin_per_flat', postgresql_where=sa.text("role = 'admin'"))
         batch_op.drop_index(batch_op.f('ix_memberships_flat_id'))
 
     op.drop_table('memberships')

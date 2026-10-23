@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from flask import Flask
-from sqlalchemy import String, text
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.core.extensions import db
@@ -54,9 +54,3 @@ def test_flat_scoped_repository_filters_by_flat(app: Flask) -> None:
         assert repository.list_in_flat(1) == [own]
         assert not hasattr(repository, "get")
 
-
-def test_sqlite_enforces_foreign_keys(app: Flask) -> None:
-    with app.app_context():
-        if db.engine.dialect.name != "sqlite":
-            return
-        assert db.session.execute(text("PRAGMA foreign_keys")).scalar() == 1

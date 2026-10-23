@@ -70,7 +70,7 @@ Wymagania: [Docker](https://docs.docker.com/get-docker/) z Docker Compose oraz [
 
    ```bash
    docker compose --profile test run --rm tests   # na PostgreSQL, tak jak w CI
-   uv sync && uv run pytest                       # lokalnie, na SQLite w pamięci
+   docker compose up -d db-test && uv run pytest  # lokalnie, na tej samej bazie testowej PostgreSQL
    ```
 
 6. Zmiana modeli wymaga migracji w tym samym PR-ze:

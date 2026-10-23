@@ -96,7 +96,7 @@ def test_reset_recreates_data(demo_app, run) -> None:
         assert _count(User) == len(DEMO_USERS)
         assert _count(Flat) == 1
         assert _count(Membership) == len(DEMO_USERS)
-        # Nowe konta mają nowe tokeny (ID w SQLite mogą się powtórzyć po usunięciu).
+        # Konta utworzone od nowa mają nowe tokeny sesji.
         assert first_tokens.isdisjoint(db.session.scalars(select(User.session_token)))
 
 

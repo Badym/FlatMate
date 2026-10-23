@@ -37,9 +37,10 @@ Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpiecze�
 | D-20 | Frontend | cały widok w `frontend/`: szablony podzielone na `layouts/`, `components/` (makra Jinja2, jeden komponent na plik) i `pages/`; CSS i JS podzielone tak samo (`main.css` z importami, `main.js` jako moduł ES); renderowanie po stronie serwera (Jinja2) + Bootstrap 5.3, Bootstrap Icons i font Inter lokalnie w `static/vendor`; motyw jasny i ciemny; biblioteka komponentów pod `/_ui/` (tylko dev) | bez zewnętrznych CDN i bez inline JS/CSS, więc CSP zostaje ścisły |
 | D-21 | Nazwy tabel | liczba mnoga (`users`, `flats`, `memberships`, …) | `user` jest słowem zastrzeżonym w PostgreSQL i wymagałby cudzysłowów w każdym zapytaniu |
 | D-22 | Typy wyliczeniowe | `VARCHAR` z ograniczeniem `CHECK` (`native_enum=False`), w bazie wartości, np. `admin` | nowa wartość to zwykła migracja zmieniająca CHECK, bez `ALTER TYPE` w PostgreSQL |
-| D-23 | Znaczniki czasu | własny typ `UTCDateTime`: zawsze UTC ze strefą; na SQLite (testy) strefa dopisywana przy odczycie; czas bez strefy jest odrzucany | porównania wygasania zaproszeń i blokad działają tak samo na PostgreSQL i SQLite |
+| D-23 | Znaczniki czasu | własny typ `UTCDateTime` (`timestamptz`): zawsze UTC, czas bez strefy jest odrzucany | porównania wygasania zaproszeń i blokad nie zależą od strefy czasowej serwera ani sesji bazy |
 | D-24 | Jeden admin na mieszkanie | indeks częściowy `UNIQUE (flat_id) WHERE role = 'admin'` w bazie | niezmiennik pilnuje baza; przekazanie roli w etapie 5 najpierw degraduje starego admina, potem awansuje nowego (w jednej transakcji) |
 | D-25 | Typy zadań | 7 typów globalnych (`flat_id = NULL`) tworzy pierwsza migracja; mieszkanie może dodać własne | typy istnieją także na produkcji, nie tylko po `seed-demo` |
+| D-26 | Baza w testach | wyłącznie PostgreSQL (osobna, ulotna baza `db-test`), bez SQLite | testy sprawdzają tę samą bazę, która działa na produkcji; brak obejść dla innego silnika w kodzie aplikacji |
 
 ---
 
@@ -67,7 +68,7 @@ FlatMate/
 │   ├── __init__.py              *  create_app(): konfiguracja, rozszerzenia, nagłówki, kontrolery, ProxyFix
 │   ├── core/
 │   │   ├── config.py            *  DevelopmentConfig, TestingConfig, ProductionConfig (konfiguracja z .env)
-│   │   ├── extensions.py        *  db, migrate, csrf, limiter, login_manager, PRAGMA foreign_keys (SQLite)
+│   │   ├── extensions.py        *  db, migrate, csrf, limiter, login_manager
 │   │   └── constants.py         *  USER_COLORS (12 kolorów, D-6), limity długości pól
 │   ├── demo_data.py             *  przykładowe dane do makiet (/ i /_ui/)
 │   ├── audit.py                    logger zdarzeń bezpieczeństwa (etap 3)
@@ -131,7 +132,7 @@ FlatMate/
 
 Zaimplementowany w etapie 3 (`backend/models/`, pierwsza migracja). Pełny diagram z ograniczeniami: [diagram_bazy_danych.md](diagram_bazy_danych.md). Tabele mają nazwy w liczbie mnogiej (D-21), wartości wyliczeniowe są tekstem z CHECK (D-22), a znaczniki czasu typem `UTCDateTime` (D-23).
 
-Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lokalne mogą iść na SQLite w pamięci, który robi to dopiero po `PRAGMA foreign_keys=ON`; ten event `connect` jest już w `backend/core/extensions.py`. Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
+Baza to PostgreSQL (D-16), także w testach (D-26). Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
 
 ### `users`
 | Pole | Typ | Uwagi |
@@ -326,7 +327,7 @@ Kalendarz robimy bez zewnętrznej biblioteki JS, żeby utrzymać prosty CSP. Sia
 | XSS | autoescape Jinja2; **zakaz `|safe` i `Markup()`** na danych użytkownika (kontrola `scripts/check_templates.py` w CI); walidatory `Length`, `Regexp`, `NumberRange` | SR-6, T-05 |
 | CSP i nagłówki | `security/headers.py`, `after_request`: `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin`, `X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, HSTS w prod. `data:` w `img-src` jest potrzebne dla ikon SVG osadzonych w CSS Bootstrapa (strzałki selectów, checkboxy, przycisk zamknięcia); obrazy nie wykonują skryptów. Bez inline JS i atrybutów `style` (kolory przez klasy, D-6) | SR-6, T-05 |
 | SQLi | wyłącznie ORM, bez `text()` z f-stringami; Bandit w CI | SR-7, T-09 |
-| Integralność bazy | klucze obce PostgreSQL (`PRAGMA foreign_keys=ON` dla SQLite w testach), kaskady w relacjach, ograniczenia unikalności (sekcja 3) | SR-4, SR-7 |
+| Integralność bazy | klucze obce PostgreSQL, kaskady w relacjach, ograniczenia unikalności i CHECK (sekcja 3, [diagram](diagram_bazy_danych.md)) | SR-4, SR-7 |
 | Zaproszenia | `token_urlsafe(32)`, w bazie SHA-256, `expires_at` = +7 dni, `revoked`; wyszukiwanie po hashu tokenu; użycie zaproszenia tworzy tylko `pending` | SR-8, T-08 |
 | Awatary | `MAX_CONTENT_LENGTH = 2 MB`; Pillow: `Image.open` + `verify()`, potem **ponowne otwarcie** (po `verify()` obiekt nie nadaje się do użycia); format ∈ {PNG, JPEG} sprawdzany po zawartości; `Image.MAX_IMAGE_PIXELS` ≈ 16 Mpx i `DecompressionBombWarning` traktowane jako błąd; zmniejszenie do 256×256 i ponowny zapis (usuwa metadane i ewentualny payload); nazwa `secrets.token_hex(16) + ext`; usunięcie starego pliku | SR-9, T-10 |
 | Logi bezpieczeństwa | `audit.py`, logger `flatmate.security` (JSON na stdout): nieudane i udane logowania, blokady kont, wylogowanie, zmiana hasła, zaproszenia, prośby, akceptacje, odrzucenia, usunięcia członków, przekazanie roli, usunięcie mieszkania, odrzucone uploady, odmowy dostępu 403/404 na trasach mieszkań. Zapisujemy ID użytkownika i IP; **nigdy** haseł, tokenów ani ciasteczek | OWASP A09 |
@@ -352,7 +353,7 @@ Kalendarz robimy bez zewnętrznej biblioteki JS, żeby utrzymać prosty CSP. Sia
 ## 7. Testy (pytest)
 
 `conftest.py`:
-- fabryka aplikacji z `TestingConfig`: baza z `TEST_DATABASE_URL` (PostgreSQL w CI i w `docker compose --profile test run --rm tests`, domyślnie SQLite w pamięci do szybkich przebiegów lokalnych), `WTF_CSRF_ENABLED=False` (poza testami CSRF), `RATELIMIT_ENABLED=False` (poza testami limitera, bo inaczej testy logowania losowo dostawałyby 429), `SESSION_COOKIE_SECURE=False`;
+- fabryka aplikacji z `TestingConfig`: osobna baza PostgreSQL z `TEST_DATABASE_URL` (lokalnie `docker compose up -d db-test`, w CI usługa postgres, w Dockerze profil `test`), `WTF_CSRF_ENABLED=False` (poza testami CSRF), `RATELIMIT_ENABLED=False` (poza testami limitera, bo inaczej testy logowania losowo dostawałyby 429), `SESSION_COOKIE_SECURE=False`;
 - fixture `make_app(**overrides)` do aplikacji z innymi ustawieniami (np. włączony CSRF, wyłączony `/_ui/`);
 - fixture'y `client`, `user_a`, `user_b`, `flat_a` (admin A), `flat_b` (admin B), `member_of_a`;
 - helper `login(client, user)` ustawiający `_user_id = user.session_token` przez `client.session_transaction()`. Dzięki temu ścieżka B może testować zadania, zanim powstanie interfejs logowania ze ścieżki A.
@@ -436,7 +437,7 @@ cp .env.example .env                                            # uzupełnić SE
 docker compose up --build                                       # aplikacja + PostgreSQL, http://localhost:8000
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build   # tryb dev z przeładowaniem
 docker compose --profile test run --rm tests                    # testy na PostgreSQL
-uv sync && uv run pytest                                        # testy lokalnie (SQLite w pamięci)
+docker compose up -d db-test && uv run pytest                   # testy lokalnie na bazie testowej PostgreSQL
 uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja po zmianie modeli
 ```
 
@@ -482,3 +483,4 @@ uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja 
 - **v4 (2026-10-23):** porządek we frontendzie: cały widok w `frontend/` (szablony `layouts/`, `components/`, `pages/`; CSS i JS podzielone na komponenty), zasady w `frontend/README.md`, testy struktury w `tests/frontend/test_structure.py` (D-20).
 - **v5 (2026-10-23):** porządek w backendzie: pakiet `app/` → `backend/`, konfiguracja, rozszerzenia i stałe w `backend/core/`, migracje w `backend/migrations/`, dane makiet w `backend/demo_data.py`, `error_controller.py`; testy podzielone na `tests/backend/`, `tests/frontend/`, `tests/scripts/`; zasady warstw w `backend/README.md` (D-19).
 - **v6 (2026-10-23):** etap 3 zrobiony: modele, pierwsza migracja z typami globalnymi, job CI dla migracji, hasła i tokeny, ładowanie sesji po `session_token`, repozytoria, dekoratory dostępu, dziennik zdarzeń bezpieczeństwa, `release_member_tasks`, `flask seed-demo`, diagram Mermaid; decyzje D-21–D-25.
+- **v7 (2026-10-23):** testy wyłącznie na PostgreSQL (D-26): baza `db-test` dostępna lokalnie, usunięte obejścia dla SQLite z kodu i migracji.

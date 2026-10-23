@@ -96,8 +96,8 @@ class TestingConfig(BaseConfig):
     def __init__(self) -> None:
         super().__init__()
         self.SECRET_KEY = secrets.token_hex(32)
-        # Domyślnie SQLite w pamięci; w CI i w Dockerze testy idą na PostgreSQL.
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite://")
+        # Osobna baza PostgreSQL tylko dla testów: docker compose up -d db-test
+        self.SQLALCHEMY_DATABASE_URI = _require_env("TEST_DATABASE_URL")
 
 
 class ProductionConfig(BaseConfig):

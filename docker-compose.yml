@@ -1,6 +1,7 @@
 # FlatMate: aplikacja + PostgreSQL.
 #   docker compose up --build                      – aplikacja na http://localhost:8000
-#   docker compose --profile test run --rm tests   – testy na osobnej, ulotnej bazie
+#   docker compose --profile test run --rm tests   – testy w kontenerze na osobnej, ulotnej bazie
+#   docker compose up -d db-test && uv run pytest   – testy lokalnie na tej samej bazie testowej
 # Sekrety pochodzą z pliku .env (wzór: .env.example).
 
 name: flatmate
@@ -62,6 +63,7 @@ services:
     environment:
       TEST_DATABASE_URL: postgresql+psycopg://flatmate:flatmate@db-test:5432/flatmate_test
 
+  # Ulotna baza testów (dane w RAM). Do testów lokalnych: docker compose up -d db-test
   db-test:
     image: postgres:17-alpine
     profiles: ["test"]
@@ -71,6 +73,8 @@ services:
       POSTGRES_PASSWORD: flatmate
     tmpfs:
       - /var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_TEST_PORT:-5434}:5432"
     healthcheck: *postgres-healthcheck
 
 volumes:

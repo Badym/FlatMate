@@ -1,7 +1,8 @@
 """Wspólne fixture'y testów.
 
-Domyślnie testy działają na SQLite w pamięci. Po ustawieniu TEST_DATABASE_URL
-(CI, ``docker compose --profile test run --rm tests``) idą na PostgreSQL.
+Testy działają na osobnej bazie PostgreSQL z TEST_DATABASE_URL:
+lokalnie ``docker compose up -d db-test``, w CI usługa postgres, w Dockerze
+``docker compose --profile test run --rm tests``.
 
 Fixture'y danych (``make_user``, ``make_flat``, ``add_member``) działają
 w kontekście aplikacji z fixture'a ``app_ctx``; zapytania klienta testowego
@@ -17,8 +18,10 @@ from functools import cache
 from typing import Any
 
 import pytest
+from dotenv import load_dotenv
 from flask import Flask, g, has_app_context
 from flask.testing import FlaskClient
+from sqlalchemy.exc import OperationalError
 
 from backend import create_app
 from backend.core.extensions import db
@@ -26,6 +29,8 @@ from backend.models import Flat, Membership, MembershipStatus, MemberRole, TaskT
 from backend.models.task_type import DEFAULT_TASK_TYPES
 from backend.models.types import utcnow
 from backend.security.passwords import hash_password
+
+load_dotenv()
 
 # Losowe przy każdym uruchomieniu, więc w repozytorium nie ma żadnego hasła.
 TEST_PASSWORD = secrets.token_urlsafe(16)
@@ -61,7 +66,10 @@ def make_app() -> Iterator[Callable[..., Flask]]:
         application = create_app("testing", overrides=overrides)
         application.test_client_class = IsolatedClient
         with application.app_context():
-            db.create_all()
+            try:
+                db.create_all()
+            except OperationalError:
+                pytest.exit("Baza testowa nie odpowiada. Uruchom: docker compose up -d db-test", returncode=1)
         created.append(application)
         return application
 
