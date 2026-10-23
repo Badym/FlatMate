@@ -26,6 +26,7 @@ from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from backend.audit import configure_audit_logging
+from backend.cli import register_cli
 from backend.controllers import register_controllers
 from backend.core.config import get_config
 from backend.core.extensions import init_extensions
@@ -66,5 +67,6 @@ def create_app(config_name: str | None = None, overrides: dict[str, Any] | None 
     configure_audit_logging(app)
     register_security_headers(app)
     register_controllers(app)
+    register_cli(app)
 
     return app

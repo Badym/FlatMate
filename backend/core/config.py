@@ -35,6 +35,7 @@ def _require_env(name: str) -> str:
 class BaseConfig:
     """Ustawienia wspólne dla wszystkich środowisk."""
 
+    ENV_NAME = "base"
     DEBUG = False
     TESTING = False
 
@@ -61,11 +62,14 @@ class BaseConfig:
         self.SECRET_KEY = os.environ.get("SECRET_KEY", "").strip()
         self.SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "").strip()
         self.TRUST_PROXY = _env_bool("TRUST_PROXY")
+        # Hasło kont demo dla `flask seed-demo` (niedostępne w produkcji).
+        self.DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "")
 
 
 class DevelopmentConfig(BaseConfig):
     """Lokalna praca nad aplikacją (http://localhost)."""
 
+    ENV_NAME = "development"
     SESSION_COOKIE_SECURE = False
     ENABLE_HSTS = False
     ENABLE_UI_PREVIEW = True
@@ -81,6 +85,7 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     """Testy automatyczne (pytest)."""
 
+    ENV_NAME = "testing"
     TESTING = True
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False
@@ -97,6 +102,8 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     """Wdrożenie: wymaga kompletnej konfiguracji, inaczej aplikacja nie startuje."""
+
+    ENV_NAME = "production"
 
     def __init__(self) -> None:
         super().__init__()

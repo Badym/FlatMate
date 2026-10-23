@@ -39,6 +39,8 @@ services:
       SECRET_KEY: ${SECRET_KEY:?Ustaw SECRET_KEY w pliku .env}
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-flatmate}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-flatmate}
       TRUST_PROXY: ${TRUST_PROXY:-0}
+      # Tylko dla `flask seed-demo` poza produkcją; puste = polecenie odmówi działania.
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
     ports:
       - "127.0.0.1:${WEB_PORT:-8000}:8000"
     read_only: true
