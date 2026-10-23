@@ -16,8 +16,10 @@ backend/
 ├── repositories/     zapytania do bazy (tylko ORM), *_repository.py
 ├── models/           M – encje ORM, jedna na plik
 ├── forms/            formularze WTForms: walidacja danych wejściowych i CSRF
-├── security/         nagłówki bezpieczeństwa, później dekoratory dostępu
+├── security/         nagłówki, dekoratory dostępu, hasła, tokeny, ładowanie sesji
 ├── migrations/       migracje Alembic (Flask-Migrate)
+├── audit.py          dziennik zdarzeń bezpieczeństwa (JSON na stdout)
+├── cli.py            polecenia flask, np. seed-demo
 └── demo_data.py      przykładowe dane do makiet (strona główna, /_ui/)
 ```
 
@@ -38,6 +40,10 @@ backend/
 
 ## Zasady
 
+- **Każda trasa mieszkania ma `<int:flat_id>` i dekorator** `@flat_member_required` albo `@flat_admin_required` (`security/access.py`). Dekorator wymaga zalogowania, ładuje `g.flat` i `g.membership`, zwraca 404 osobie spoza mieszkania i 403 członkowi bez roli admina.
+- **ID z formularzy sprawdzaj względem mieszkania:** osobę przez `MembershipService.is_active_member` (lista wyboru: `member_choices`), typ zadania przez `TaskTypeRepository.get_available`.
+- **Zdarzenia bezpieczeństwa przez `audit_event("nazwa", pole=…)`** (`audit.py`). IP, ścieżka i ID użytkownika dochodzą same, a pola z „password”, „token” czy „secret” w nazwie są ukrywane.
+- **Hasła tylko przez `security/passwords.py`:** `hash_password` i `verify_password` (stały czas także dla nieistniejącego konta).
 - **Dane mieszkania zawsze przez `FlatScopedRepository`.** Nie ma w nim `get(id)`, tylko `get_in_flat(flat_id, id)`, więc podmiana ID w adresie nie da dostępu do cudzego mieszkania (T-01).
 - **Tylko ORM.** Bez SQL sklejanego z tekstu, nawet przez `text()` z f-stringiem (SR-7). Bandit sprawdza to w CI.
 - **Sekrety tylko z `.env`.** `core/config.py` w produkcji nie wystartuje bez `SECRET_KEY` (minimum 32 znaki) i `DATABASE_URL` (SR-10).

@@ -5,7 +5,7 @@ Plan opiera się na [README.md](../README.md), [REQUIREMENTS.md](../REQUIREMENTS
 - `diagram_A_architektura.png` – architektura i ścieżka żądania,
 - `diagram_B_przeplyw.png` – przepływ działania aplikacji,
 - `diagram_C_devsecops.png` – proces DevSecOps,
-- `diagram_bazy_danych.png` – model danych.
+- `diagram_bazy_danych.md` – aktualny model danych (Mermaid, od etapu 3); `diagram_bazy_danych.png` – pierwotny szkic kluczy.
 
 Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpieczeństwa, a **T-xx** to zagrożenie z modelu zagrożeń w REQUIREMENTS.md.
 
@@ -35,6 +35,11 @@ Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpiecze�
 | D-18 | Zależności | **uv**: `pyproject.toml` + `uv.lock` (zamiast `requirements.txt`); grupa `dev` dla testów i skanerów; `uv sync --locked` w Dockerze i CI | powtarzalne wersje z lockfile'a (T-12), jedno narzędzie do Pythona i zależności |
 | D-19 | Architektura | dwa katalogi główne: `backend/` i `frontend/`; w backendzie warstwy MVC: `controllers` (endpointy) → `services` (logika, transakcje) → `repositories` (zapytania ORM) → `models`, obok `forms` (walidacja), `security`, `core` (konfiguracja, rozszerzenia, stałe) i `migrations`; jedna aplikacja Flask renderująca widok z `frontend/` (bez osobnego API i SPA) | kontroler nie dotyka bazy, repozytorium nie zatwierdza transakcji; łatwe testy warstw |
 | D-20 | Frontend | cały widok w `frontend/`: szablony podzielone na `layouts/`, `components/` (makra Jinja2, jeden komponent na plik) i `pages/`; CSS i JS podzielone tak samo (`main.css` z importami, `main.js` jako moduł ES); renderowanie po stronie serwera (Jinja2) + Bootstrap 5.3, Bootstrap Icons i font Inter lokalnie w `static/vendor`; motyw jasny i ciemny; biblioteka komponentów pod `/_ui/` (tylko dev) | bez zewnętrznych CDN i bez inline JS/CSS, więc CSP zostaje ścisły |
+| D-21 | Nazwy tabel | liczba mnoga (`users`, `flats`, `memberships`, …) | `user` jest słowem zastrzeżonym w PostgreSQL i wymagałby cudzysłowów w każdym zapytaniu |
+| D-22 | Typy wyliczeniowe | `VARCHAR` z ograniczeniem `CHECK` (`native_enum=False`), w bazie wartości, np. `admin` | nowa wartość to zwykła migracja zmieniająca CHECK, bez `ALTER TYPE` w PostgreSQL |
+| D-23 | Znaczniki czasu | własny typ `UTCDateTime`: zawsze UTC ze strefą; na SQLite (testy) strefa dopisywana przy odczycie; czas bez strefy jest odrzucany | porównania wygasania zaproszeń i blokad działają tak samo na PostgreSQL i SQLite |
+| D-24 | Jeden admin na mieszkanie | indeks częściowy `UNIQUE (flat_id) WHERE role = 'admin'` w bazie | niezmiennik pilnuje baza; przekazanie roli w etapie 5 najpierw degraduje starego admina, potem awansuje nowego (w jednej transakcji) |
+| D-25 | Typy zadań | 7 typów globalnych (`flat_id = NULL`) tworzy pierwsza migracja; mieszkanie może dodać własne | typy istnieją także na produkcji, nie tylko po `seed-demo` |
 
 ---
 
@@ -124,11 +129,11 @@ FlatMate/
 
 ## 3. Model danych
 
-Na podstawie `diagram_bazy_danych.png`. Diagram podaje tylko klucze, a poniżej są uzupełnione pola. W etapie 3 trzeba zaktualizować diagram o `task.parent_task_id` i `task_type.flat_id`.
+Zaimplementowany w etapie 3 (`backend/models/`, pierwsza migracja). Pełny diagram z ograniczeniami: [diagram_bazy_danych.md](diagram_bazy_danych.md). Tabele mają nazwy w liczbie mnogiej (D-21), wartości wyliczeniowe są tekstem z CHECK (D-22), a znaczniki czasu typem `UTCDateTime` (D-23).
 
 Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lokalne mogą iść na SQLite w pamięci, który robi to dopiero po `PRAGMA foreign_keys=ON`; ten event `connect` jest już w `backend/core/extensions.py`. Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
 
-### `user`
+### `users`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -142,14 +147,14 @@ Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lo
 | locked_until | DateTime, nullable | czasowa blokada konta |
 | created_at | DateTime | |
 
-### `flat`
+### `flats`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
 | name | String(80) | |
 | created_at | DateTime | |
 
-### `membership` (user ↔ flat, N:M)
+### `memberships` (users ↔ flats, N:M)
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -162,7 +167,7 @@ Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lo
 
 Niezmiennik: każde mieszkanie ma dokładnie jednego admina ze statusem `active`.
 
-### `invite`
+### `invites`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -175,7 +180,7 @@ Niezmiennik: każde mieszkanie ma dokładnie jednego admina ze statusem `active`
 
 Token: `secrets.token_urlsafe(32)`. W bazie trzymamy tylko jego hash, więc wyciek bazy nie ujawnia działających linków.
 
-### `task_type`
+### `task_types`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -183,7 +188,7 @@ Token: `secrets.token_urlsafe(32)`. W bazie trzymamy tylko jego hash, więc wyci
 | name | String(50) | |
 | default_points | Integer | |
 
-### `task`
+### `tasks`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -207,7 +212,7 @@ Rodzaj wiersza:
 - `parent_task_id IS NULL` i `recurrence ≠ none` → **szablon serii** (nie jest wyświetlany jako zadanie do zrobienia),
 - `parent_task_id` ustawione → **wystąpienie serii** (`recurrence = none`).
 
-### `rotation_member`
+### `rotation_members`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -406,7 +411,7 @@ Każdy etap to osobna gałąź i PR przechodzący przez CI. Po wspólnym etapie 
 | --- | --- | --- | --- |
 | **1** (zrobione) | razem | README, REQUIREMENTS, diagramy, plan | zrobione |
 | **2. Szkielet + CI** (zrobione) | A | warstwy MVC, `create_app`, config z `.env`, rozszerzenia, Alembic, nagłówki bezpieczeństwa, strony błędów; frontend: motyw jasny/ciemny, strona główna, logowanie i rejestracja (formularze z walidacją), biblioteka komponentów `/_ui/`; uv; Docker (aplikacja + PostgreSQL); workflow CI (testy na PostgreSQL, Bandit, pip-audit, gitleaks, kontrola szablonów, obraz Dockera), Dependabot | aplikacja startuje w Dockerze, testy zielone |
-| **3. Fundament** | razem, krótko | wszystkie modele z sekcji 3 (kaskady, ograniczenia) i pierwsza migracja Alembica, `flask seed-demo`, typy domyślne, dekoratory `@flat_member_required` / `@flat_admin_required`, helpery walidacji przynależności, `audit.py`, fixture'y testowe z logowaniem przez sesję, szkielet `release_member_tasks`, aktualizacja diagramu bazy | obie ścieżki mogą pracować niezależnie |
+| **3. Fundament** (zrobione) | razem, krótko | wszystkie modele z sekcji 3 (kaskady, ograniczenia) i pierwsza migracja Alembica, `flask seed-demo`, typy domyślne, dekoratory `@flat_member_required` / `@flat_admin_required`, helpery walidacji przynależności, `audit.py`, fixture'y testowe z logowaniem przez sesję, szkielet `release_member_tasks`, aktualizacja diagramu bazy | obie ścieżki mogą pracować niezależnie |
 | **4. Auth + profil** | A | rejestracja, logowanie z limiterem i blokadą konta, `session_token`, wylogowanie, `is_safe_next`, profil z paletą kolorów, zmiana hasła, awatary | FR-1, FR-2; SR-1, 2, 3, 9 |
 | **5. Mieszkania i członkowie** | A | tworzenie, pulpit, zaproszenia, prośby, akceptacja, odrzucenie, usuwanie, przekazanie roli, opuszczenie, usunięcie mieszkania, `remove_member` | FR-3, 4, 5; SR-4, 8; testy IDOR i eskalacji |
 | **6. Zadania** | B | CRUD zadań jednorazowych, typy, pula, „Biorę”, przypisanie, wykonanie (warunkowe UPDATE), punkty, walidacja ID z formularzy | FR-6, FR-8 |
@@ -476,3 +481,4 @@ uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja 
   - CI oparte na uv, z testami na PostgreSQL i budową obrazu Dockera.
 - **v4 (2026-10-23):** porządek we frontendzie: cały widok w `frontend/` (szablony `layouts/`, `components/`, `pages/`; CSS i JS podzielone na komponenty), zasady w `frontend/README.md`, testy struktury w `tests/frontend/test_structure.py` (D-20).
 - **v5 (2026-10-23):** porządek w backendzie: pakiet `app/` → `backend/`, konfiguracja, rozszerzenia i stałe w `backend/core/`, migracje w `backend/migrations/`, dane makiet w `backend/demo_data.py`, `error_controller.py`; testy podzielone na `tests/backend/`, `tests/frontend/`, `tests/scripts/`; zasady warstw w `backend/README.md` (D-19).
+- **v6 (2026-10-23):** etap 3 zrobiony: modele, pierwsza migracja z typami globalnymi, job CI dla migracji, hasła i tokeny, ładowanie sesji po `session_token`, repozytoria, dekoratory dostępu, dziennik zdarzeń bezpieczeństwa, `release_member_tasks`, `flask seed-demo`, diagram Mermaid; decyzje D-21–D-25.
