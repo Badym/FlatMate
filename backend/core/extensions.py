@@ -32,16 +32,6 @@ login_manager.login_message = "Zaloguj się, aby kontynuować."
 login_manager.login_message_category = "info"
 
 
-@login_manager.user_loader
-def load_user(session_token: str) -> Any:
-    """Ładuje użytkownika z sesji.
-
-    Etap 4: wyszukanie po ``User.session_token`` (D-13), dzięki czemu
-    wylogowanie i zmiana hasła unieważniają stare ciasteczka.
-    """
-    return None
-
-
 @event.listens_for(Engine, "connect")
 def _enable_sqlite_foreign_keys(dbapi_connection: Any, _connection_record: Any) -> None:
     """SQLite domyślnie nie pilnuje kluczy obcych; PostgreSQL robi to zawsze."""
