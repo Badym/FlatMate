@@ -17,11 +17,12 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 from backend.models.base import Base
+from backend.models.types import render_alembic_type
 
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "migrations"
 
 db = SQLAlchemy(model_class=Base)
-migrate = Migrate()
+migrate = Migrate(compare_type=True, render_item=render_alembic_type)
 csrf = CSRFProtect()
 limiter = Limiter(key_func=get_remote_address)
 
