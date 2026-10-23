@@ -1,0 +1,5 @@
+# Znane fałszywe alarmy gitleaks (format: commit:plik:reguła:linia).
+# Każdy wpis musi wskazywać wartość testową, nigdy prawdziwy sekret.
+
+# Wymyślone hasło testowe VALID_PASSWORD w testach formularzy (reguła generic-api-key).
+000ef52c3bc2983be041f5bc7f76d2c173ccee9b:tests/test_auth_forms.py:generic-api-key:7
