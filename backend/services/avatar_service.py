@@ -27,6 +27,7 @@ from backend.models import User
 ALLOWED_FORMATS = {"PNG": "png", "JPEG": "jpg"}
 AVATAR_FILENAME_PATTERN = re.compile(r"[0-9a-f]{32}\.(png|jpg)")
 AVATAR_URL_PREFIX = "uploads/avatars/"
+AVATAR_FILE_MODE = 0o644
 
 # Pillow ostrzega powyżej limitu i przerywa powyżej dwukrotności; ostrzeżenie zamieniamy na błąd.
 Image.MAX_IMAGE_PIXELS = AVATAR_MAX_PIXELS
@@ -113,6 +114,8 @@ class AvatarService:
         try:
             with os.fdopen(descriptor, "wb") as temp_file:
                 temp_file.write(content)
+            # mkstemp tworzy plik 0600; awatar to plik publiczny, czytany też np. przez proxy (etap 9).
+            os.chmod(temp_path, AVATAR_FILE_MODE)
             os.replace(temp_path, self._upload_dir / filename)
         except BaseException:
             Path(temp_path).unlink(missing_ok=True)
