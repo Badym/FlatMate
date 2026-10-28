@@ -5,7 +5,7 @@ Plan opiera się na [README.md](../README.md), [REQUIREMENTS.md](../REQUIREMENTS
 - `diagram_A_architektura.png` – architektura i ścieżka żądania,
 - `diagram_B_przeplyw.png` – przepływ działania aplikacji,
 - `diagram_C_devsecops.png` – proces DevSecOps,
-- `diagram_bazy_danych.png` – model danych.
+- `diagram_bazy_danych.md` – aktualny model danych (Mermaid, od etapu 3); `diagram_bazy_danych.png` – pierwotny szkic kluczy.
 
 Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpieczeństwa, a **T-xx** to zagrożenie z modelu zagrożeń w REQUIREMENTS.md.
 
@@ -35,6 +35,16 @@ Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpiecze�
 | D-18 | Zależności | **uv**: `pyproject.toml` + `uv.lock` (zamiast `requirements.txt`); grupa `dev` dla testów i skanerów; `uv sync --locked` w Dockerze i CI | powtarzalne wersje z lockfile'a (T-12), jedno narzędzie do Pythona i zależności |
 | D-19 | Architektura | dwa katalogi główne: `backend/` i `frontend/`; w backendzie warstwy MVC: `controllers` (endpointy) → `services` (logika, transakcje) → `repositories` (zapytania ORM) → `models`, obok `forms` (walidacja), `security`, `core` (konfiguracja, rozszerzenia, stałe) i `migrations`; jedna aplikacja Flask renderująca widok z `frontend/` (bez osobnego API i SPA) | kontroler nie dotyka bazy, repozytorium nie zatwierdza transakcji; łatwe testy warstw |
 | D-20 | Frontend | cały widok w `frontend/`: szablony podzielone na `layouts/`, `components/` (makra Jinja2, jeden komponent na plik) i `pages/`; CSS i JS podzielone tak samo (`main.css` z importami, `main.js` jako moduł ES); renderowanie po stronie serwera (Jinja2) + Bootstrap 5.3, Bootstrap Icons i font Inter lokalnie w `static/vendor`; motyw jasny i ciemny; biblioteka komponentów pod `/_ui/` (tylko dev) | bez zewnętrznych CDN i bez inline JS/CSS, więc CSP zostaje ścisły |
+| D-21 | Nazwy tabel | liczba mnoga (`users`, `flats`, `memberships`, …) | `user` jest słowem zastrzeżonym w PostgreSQL i wymagałby cudzysłowów w każdym zapytaniu |
+| D-22 | Typy wyliczeniowe | `VARCHAR` z ograniczeniem `CHECK` (`native_enum=False`), w bazie wartości, np. `admin` | nowa wartość to zwykła migracja zmieniająca CHECK, bez `ALTER TYPE` w PostgreSQL |
+| D-23 | Znaczniki czasu | własny typ `UTCDateTime` (`timestamptz`): zawsze UTC, czas bez strefy jest odrzucany | porównania wygasania zaproszeń i blokad nie zależą od strefy czasowej serwera ani sesji bazy |
+| D-24 | Jeden admin na mieszkanie | indeks częściowy `UNIQUE (flat_id) WHERE role = 'admin'` w bazie | niezmiennik pilnuje baza; przekazanie roli w etapie 5 najpierw degraduje starego admina, potem awansuje nowego (w jednej transakcji) |
+| D-25 | Typy zadań | 7 typów globalnych (`flat_id = NULL`) tworzy pierwsza migracja; mieszkanie może dodać własne | typy istnieją także na produkcji, nie tylko po `seed-demo` |
+| D-26 | Baza w testach | wyłącznie PostgreSQL (osobna, ulotna baza `db-test`), bez SQLite | testy sprawdzają tę samą bazę, która działa na produkcji; brak obejść dla innego silnika w kodzie aplikacji |
+| D-27 | Weryfikacja e-maila i reset hasła | poza zakresem projektu; brak serwera pocztowego. Ryzyko szczątkowe: konto można założyć na cudzy adres, a zapomniane hasło resetuje tylko administrator bazy | wymagania (FR-1, SR-1–SR-3) tego nie przewidują |
+| D-28 | Ciasteczko sesji w produkcji | nazwa `__Host-flatmate` | prefiks `__Host-` wymusza w przeglądarce HTTPS, brak domeny i ścieżkę `/`, więc ciasteczka nie da się podmienić z subdomeny |
+| D-29 | Awatary | pliki statyczne `frontend/static/uploads/avatars/` z losową 128-bitową nazwą, w Dockerze osobny wolumen; każdy obraz dekodowany i zapisywany od nowa (PNG/JPEG, 256×256, bez metadanych) | prosto i bez osobnej trasy; nazwa nie do zgadnięcia, a treść pliku zawsze pochodzi z Pillow |
+| D-30 | Adresy kont demo i testów | demo: `@flatmate.example`, testy: `@example.com` | domeny zarezerwowane (RFC 2606); `.test` odpada, bo email-validator odrzuca ją jako domenę specjalnego użytku |
 
 ---
 
@@ -62,7 +72,7 @@ FlatMate/
 │   ├── __init__.py              *  create_app(): konfiguracja, rozszerzenia, nagłówki, kontrolery, ProxyFix
 │   ├── core/
 │   │   ├── config.py            *  DevelopmentConfig, TestingConfig, ProductionConfig (konfiguracja z .env)
-│   │   ├── extensions.py        *  db, migrate, csrf, limiter, login_manager, PRAGMA foreign_keys (SQLite)
+│   │   ├── extensions.py        *  db, migrate, csrf, limiter, login_manager
 │   │   └── constants.py         *  USER_COLORS (12 kolorów, D-6), limity długości pól
 │   ├── demo_data.py             *  przykładowe dane do makiet (/ i /_ui/)
 │   ├── audit.py                    logger zdarzeń bezpieczeństwa (etap 3)
@@ -72,17 +82,19 @@ FlatMate/
 │   │   ├── auth_controller.py   *  /login, /register, /logout
 │   │   ├── ui_controller.py     *  /_ui/ – biblioteka komponentów (tylko dev)
 │   │   ├── error_controller.py  *  strony błędów 400–500
-│   │   ├── profile_controller.py   etap 4
-│   │   ├── flats_controller.py     etap 5 (mieszkania, członkowie, zaproszenia)
+│   │   ├── profile_controller.py *  /profile: dane i kolor, hasło, awatar
+│   │   ├── flats_controller.py  *  /flats: lista mieszkań; w etapie 5 tworzenie, członkowie, zaproszenia
 │   │   ├── tasks_controller.py     etapy 6–7
 │   │   └── calendar_controller.py  etap 8
 │   ├── services/                *  logika biznesowa i granice transakcji
 │   │   ├── health_service.py    * 
-│   │   ├── auth_service.py         etap 4 (hasła, limit prób, session_token)
+│   │   ├── auth_service.py      *  rejestracja, logowanie z blokadą konta, wylogowanie, zmiana hasła
+│   │   ├── profile_service.py   *  nazwa i kolor
+│   │   ├── flat_service.py      *  mieszkania użytkownika z członkami i liczbą zadań
 │   │   ├── membership.py           etap 5 (odejście/usunięcie członka, przekazanie roli)
 │   │   ├── tasks.py                etap 6 (claim/done jako warunkowe UPDATE, punkty)
 │   │   ├── recurrence.py           etap 7 (wystąpienia zadań cyklicznych)
-│   │   └── avatars.py              etap 4 (walidacja i zapis awatarów)
+│   │   └── avatar_service.py    *  walidacja (Pillow), przetwarzanie i zapis awatarów
 │   ├── repositories/            *  jedyne miejsce z zapytaniami do bazy (ORM)
 │   │   ├── base_repository.py   *  Repository (zasoby globalne), FlatScopedRepository (zawsze z flat_id, T-01)
 │   │   └── health_repository.py * 
@@ -124,11 +136,11 @@ FlatMate/
 
 ## 3. Model danych
 
-Na podstawie `diagram_bazy_danych.png`. Diagram podaje tylko klucze, a poniżej są uzupełnione pola. W etapie 3 trzeba zaktualizować diagram o `task.parent_task_id` i `task_type.flat_id`.
+Zaimplementowany w etapie 3 (`backend/models/`, pierwsza migracja). Pełny diagram z ograniczeniami: [diagram_bazy_danych.md](diagram_bazy_danych.md). Tabele mają nazwy w liczbie mnogiej (D-21), wartości wyliczeniowe są tekstem z CHECK (D-22), a znaczniki czasu typem `UTCDateTime` (D-23).
 
-Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lokalne mogą iść na SQLite w pamięci, który robi to dopiero po `PRAGMA foreign_keys=ON`; ten event `connect` jest już w `backend/core/extensions.py`. Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
+Baza to PostgreSQL (D-16), także w testach (D-26). Relacje `Flat → memberships / invites / tasks / task_types` mają `cascade="all, delete-orphan"`, a klucze obce `ondelete="CASCADE"` (wyjątki opisane przy polach).
 
-### `user`
+### `users`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -142,14 +154,14 @@ Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lo
 | locked_until | DateTime, nullable | czasowa blokada konta |
 | created_at | DateTime | |
 
-### `flat`
+### `flats`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
 | name | String(80) | |
 | created_at | DateTime | |
 
-### `membership` (user ↔ flat, N:M)
+### `memberships` (users ↔ flats, N:M)
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -162,7 +174,7 @@ Baza to PostgreSQL (D-16), który zawsze pilnuje kluczy obcych. Szybkie testy lo
 
 Niezmiennik: każde mieszkanie ma dokładnie jednego admina ze statusem `active`.
 
-### `invite`
+### `invites`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -175,7 +187,7 @@ Niezmiennik: każde mieszkanie ma dokładnie jednego admina ze statusem `active`
 
 Token: `secrets.token_urlsafe(32)`. W bazie trzymamy tylko jego hash, więc wyciek bazy nie ujawnia działających linków.
 
-### `task_type`
+### `task_types`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -183,7 +195,7 @@ Token: `secrets.token_urlsafe(32)`. W bazie trzymamy tylko jego hash, więc wyci
 | name | String(50) | |
 | default_points | Integer | |
 
-### `task`
+### `tasks`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -207,7 +219,7 @@ Rodzaj wiersza:
 - `parent_task_id IS NULL` i `recurrence ≠ none` → **szablon serii** (nie jest wyświetlany jako zadanie do zrobienia),
 - `parent_task_id` ustawione → **wystąpienie serii** (`recurrence = none`).
 
-### `rotation_member`
+### `rotation_members`
 | Pole | Typ | Uwagi |
 | --- | --- | --- |
 | id | Integer PK | |
@@ -256,12 +268,17 @@ Zasoby mieszkania pobieramy zawsze zapytaniem z `flat_id` z adresu, np. `Task.qu
 | GET/POST | `/login` | logowanie; nieudana próba zwraca **401** z formularzem | limit IP liczący tylko nieudane próby + blokada konta; ogólny komunikat (SR-2, T-03); parametr `next` przez `is_safe_next()` |
 | POST | `/logout` | wylogowanie | nowy `session_token`, `session.clear()` (T-07, D-13) |
 
+Zalogowany użytkownik wchodzący na `/login` lub `/register` trafia na `/flats`. Przed zalogowaniem sesja jest czyszczona (session fixation), sesja trwa 12 h. Konto blokuje się na 15 minut po 10 nieudanych próbach (licznik zeruje się z chwilą blokady); w czasie blokady także poprawne hasło dostaje ogólny komunikat.
+
 ### profile
 | Metoda | URL | Opis |
 | --- | --- | --- |
 | GET/POST | `/profile` | nazwa, kolor z palety (D-6) |
 | POST | `/profile/avatar` | upload awatara (SR-9, T-10) |
-| POST | `/profile/password` | zmiana hasła, wymaga starego hasła; nowy `session_token`, po czym ponowne zalogowanie bieżącej sesji |
+| POST | `/profile/avatar/delete` | usunięcie awatara |
+| POST | `/profile/password` | zmiana hasła, wymaga starego hasła i innego nowego; limit `10/hour`; nowy `session_token`, po czym ponowne zalogowanie bieżącej sesji |
+
+Strona profilu ma trzy niezależne formularze z prefiksami (`profile-`, `password-`, `avatar-`), każdy z własnym tokenem CSRF.
 
 ### flats
 | Metoda | URL | Opis | Rola |
@@ -321,7 +338,7 @@ Kalendarz robimy bez zewnętrznej biblioteki JS, żeby utrzymać prosty CSP. Sia
 | XSS | autoescape Jinja2; **zakaz `|safe` i `Markup()`** na danych użytkownika (kontrola `scripts/check_templates.py` w CI); walidatory `Length`, `Regexp`, `NumberRange` | SR-6, T-05 |
 | CSP i nagłówki | `security/headers.py`, `after_request`: `Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin`, `X-Frame-Options: DENY`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, HSTS w prod. `data:` w `img-src` jest potrzebne dla ikon SVG osadzonych w CSS Bootstrapa (strzałki selectów, checkboxy, przycisk zamknięcia); obrazy nie wykonują skryptów. Bez inline JS i atrybutów `style` (kolory przez klasy, D-6) | SR-6, T-05 |
 | SQLi | wyłącznie ORM, bez `text()` z f-stringami; Bandit w CI | SR-7, T-09 |
-| Integralność bazy | klucze obce PostgreSQL (`PRAGMA foreign_keys=ON` dla SQLite w testach), kaskady w relacjach, ograniczenia unikalności (sekcja 3) | SR-4, SR-7 |
+| Integralność bazy | klucze obce PostgreSQL, kaskady w relacjach, ograniczenia unikalności i CHECK (sekcja 3, [diagram](diagram_bazy_danych.md)) | SR-4, SR-7 |
 | Zaproszenia | `token_urlsafe(32)`, w bazie SHA-256, `expires_at` = +7 dni, `revoked`; wyszukiwanie po hashu tokenu; użycie zaproszenia tworzy tylko `pending` | SR-8, T-08 |
 | Awatary | `MAX_CONTENT_LENGTH = 2 MB`; Pillow: `Image.open` + `verify()`, potem **ponowne otwarcie** (po `verify()` obiekt nie nadaje się do użycia); format ∈ {PNG, JPEG} sprawdzany po zawartości; `Image.MAX_IMAGE_PIXELS` ≈ 16 Mpx i `DecompressionBombWarning` traktowane jako błąd; zmniejszenie do 256×256 i ponowny zapis (usuwa metadane i ewentualny payload); nazwa `secrets.token_hex(16) + ext`; usunięcie starego pliku | SR-9, T-10 |
 | Logi bezpieczeństwa | `audit.py`, logger `flatmate.security` (JSON na stdout): nieudane i udane logowania, blokady kont, wylogowanie, zmiana hasła, zaproszenia, prośby, akceptacje, odrzucenia, usunięcia członków, przekazanie roli, usunięcie mieszkania, odrzucone uploady, odmowy dostępu 403/404 na trasach mieszkań. Zapisujemy ID użytkownika i IP; **nigdy** haseł, tokenów ani ciasteczek | OWASP A09 |
@@ -347,7 +364,7 @@ Kalendarz robimy bez zewnętrznej biblioteki JS, żeby utrzymać prosty CSP. Sia
 ## 7. Testy (pytest)
 
 `conftest.py`:
-- fabryka aplikacji z `TestingConfig`: baza z `TEST_DATABASE_URL` (PostgreSQL w CI i w `docker compose --profile test run --rm tests`, domyślnie SQLite w pamięci do szybkich przebiegów lokalnych), `WTF_CSRF_ENABLED=False` (poza testami CSRF), `RATELIMIT_ENABLED=False` (poza testami limitera, bo inaczej testy logowania losowo dostawałyby 429), `SESSION_COOKIE_SECURE=False`;
+- fabryka aplikacji z `TestingConfig`: osobna baza PostgreSQL z `TEST_DATABASE_URL` (lokalnie `docker compose up -d db-test`, w CI usługa postgres, w Dockerze profil `test`), `WTF_CSRF_ENABLED=False` (poza testami CSRF), `RATELIMIT_ENABLED=False` (poza testami limitera, bo inaczej testy logowania losowo dostawałyby 429), `SESSION_COOKIE_SECURE=False`;
 - fixture `make_app(**overrides)` do aplikacji z innymi ustawieniami (np. włączony CSRF, wyłączony `/_ui/`);
 - fixture'y `client`, `user_a`, `user_b`, `flat_a` (admin A), `flat_b` (admin B), `member_of_a`;
 - helper `login(client, user)` ustawiający `_user_id = user.session_token` przez `client.session_transaction()`. Dzięki temu ścieżka B może testować zadania, zanim powstanie interfejs logowania ze ścieżki A.
@@ -406,8 +423,8 @@ Każdy etap to osobna gałąź i PR przechodzący przez CI. Po wspólnym etapie 
 | --- | --- | --- | --- |
 | **1** (zrobione) | razem | README, REQUIREMENTS, diagramy, plan | zrobione |
 | **2. Szkielet + CI** (zrobione) | A | warstwy MVC, `create_app`, config z `.env`, rozszerzenia, Alembic, nagłówki bezpieczeństwa, strony błędów; frontend: motyw jasny/ciemny, strona główna, logowanie i rejestracja (formularze z walidacją), biblioteka komponentów `/_ui/`; uv; Docker (aplikacja + PostgreSQL); workflow CI (testy na PostgreSQL, Bandit, pip-audit, gitleaks, kontrola szablonów, obraz Dockera), Dependabot | aplikacja startuje w Dockerze, testy zielone |
-| **3. Fundament** | razem, krótko | wszystkie modele z sekcji 3 (kaskady, ograniczenia) i pierwsza migracja Alembica, `flask seed-demo`, typy domyślne, dekoratory `@flat_member_required` / `@flat_admin_required`, helpery walidacji przynależności, `audit.py`, fixture'y testowe z logowaniem przez sesję, szkielet `release_member_tasks`, aktualizacja diagramu bazy | obie ścieżki mogą pracować niezależnie |
-| **4. Auth + profil** | A | rejestracja, logowanie z limiterem i blokadą konta, `session_token`, wylogowanie, `is_safe_next`, profil z paletą kolorów, zmiana hasła, awatary | FR-1, FR-2; SR-1, 2, 3, 9 |
+| **3. Fundament** (zrobione) | razem, krótko | wszystkie modele z sekcji 3 (kaskady, ograniczenia) i pierwsza migracja Alembica, `flask seed-demo`, typy domyślne, dekoratory `@flat_member_required` / `@flat_admin_required`, helpery walidacji przynależności, `audit.py`, fixture'y testowe z logowaniem przez sesję, szkielet `release_member_tasks`, aktualizacja diagramu bazy | obie ścieżki mogą pracować niezależnie |
+| **4. Auth + profil** (zrobione) | A | rejestracja, logowanie z limiterem i blokadą konta, `session_token`, wylogowanie, `is_safe_next`, profil z paletą kolorów, zmiana hasła, awatary | FR-1, FR-2; SR-1, 2, 3, 9 |
 | **5. Mieszkania i członkowie** | A | tworzenie, pulpit, zaproszenia, prośby, akceptacja, odrzucenie, usuwanie, przekazanie roli, opuszczenie, usunięcie mieszkania, `remove_member` | FR-3, 4, 5; SR-4, 8; testy IDOR i eskalacji |
 | **6. Zadania** | B | CRUD zadań jednorazowych, typy, pula, „Biorę”, przypisanie, wykonanie (warunkowe UPDATE), punkty, walidacja ID z formularzy | FR-6, FR-8 |
 | **7. Zadania cykliczne** | B | `services/recurrence.py`, szablony i wystąpienia, tryby fixed / rotation / pool, `rotation_member`, implementacja `release_member_tasks` | FR-7, testy rotacji |
@@ -431,7 +448,7 @@ cp .env.example .env                                            # uzupełnić SE
 docker compose up --build                                       # aplikacja + PostgreSQL, http://localhost:8000
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build   # tryb dev z przeładowaniem
 docker compose --profile test run --rm tests                    # testy na PostgreSQL
-uv sync && uv run pytest                                        # testy lokalnie (SQLite w pamięci)
+docker compose up -d db-test && uv run pytest                   # testy lokalnie na bazie testowej PostgreSQL
 uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja po zmianie modeli
 ```
 
@@ -476,3 +493,6 @@ uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja 
   - CI oparte na uv, z testami na PostgreSQL i budową obrazu Dockera.
 - **v4 (2026-10-23):** porządek we frontendzie: cały widok w `frontend/` (szablony `layouts/`, `components/`, `pages/`; CSS i JS podzielone na komponenty), zasady w `frontend/README.md`, testy struktury w `tests/frontend/test_structure.py` (D-20).
 - **v5 (2026-10-23):** porządek w backendzie: pakiet `app/` → `backend/`, konfiguracja, rozszerzenia i stałe w `backend/core/`, migracje w `backend/migrations/`, dane makiet w `backend/demo_data.py`, `error_controller.py`; testy podzielone na `tests/backend/`, `tests/frontend/`, `tests/scripts/`; zasady warstw w `backend/README.md` (D-19).
+- **v6 (2026-10-23):** etap 3 zrobiony: modele, pierwsza migracja z typami globalnymi, job CI dla migracji, hasła i tokeny, ładowanie sesji po `session_token`, repozytoria, dekoratory dostępu, dziennik zdarzeń bezpieczeństwa, `release_member_tasks`, `flask seed-demo`, diagram Mermaid; decyzje D-21–D-25.
+- **v7 (2026-10-23):** testy wyłącznie na PostgreSQL (D-26): baza `db-test` dostępna lokalnie, usunięte obejścia dla SQLite z kodu i migracji.
+- **v8 (2026-10-23):** etap 4 zrobiony: rejestracja, logowanie z limitem na IP i blokadą konta, wylogowanie z rotacją tokenu, bezpieczne `next`, profil (nazwa, kolor, hasło, awatar), lista mieszkań, menu użytkownika; decyzje D-27–D-30.

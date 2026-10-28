@@ -16,9 +16,15 @@ from backend.core.constants import (
 _REQUIRED = "To pole jest wymagane."
 
 
+def strip_whitespace(value: str | None) -> str | None:
+    """Spacje na brzegach (częste przy wklejaniu) nie powinny psuć walidacji adresu ani nazwy."""
+    return value.strip() if isinstance(value, str) else value
+
+
 class LoginForm(FlaskForm):
     email = EmailField(
         "Adres e-mail",
+        filters=[strip_whitespace],
         validators=[
             DataRequired(message=_REQUIRED),
             Email(message="Podaj poprawny adres e-mail."),
@@ -35,6 +41,7 @@ class LoginForm(FlaskForm):
 class RegisterForm(FlaskForm):
     display_name = StringField(
         "Imię lub pseudonim",
+        filters=[strip_whitespace],
         validators=[
             DataRequired(message=_REQUIRED),
             Length(min=2, max=DISPLAY_NAME_MAX_LENGTH, message="Od 2 do 50 znaków."),
@@ -42,6 +49,7 @@ class RegisterForm(FlaskForm):
     )
     email = EmailField(
         "Adres e-mail",
+        filters=[strip_whitespace],
         validators=[
             DataRequired(message=_REQUIRED),
             Email(message="Podaj poprawny adres e-mail."),

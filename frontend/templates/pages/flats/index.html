@@ -1,0 +1,47 @@
+{#- Moje mieszkania (flats.index). flats: lista FlatSummary. Style: css/pages/flats.css -#}
+{% extends "layouts/base.html" %}
+{% from "components/avatar.html" import avatar_stack %}
+{% from "components/badge.html" import badge %}
+{% from "components/empty_state.html" import empty_state %}
+
+{% block title %}Moje mieszkania · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <header class="fm-page-header">
+    <div>
+      <span class="fm-eyebrow">Cześć, {{ current_user.display_name }}</span>
+      <h1 class="fm-page-title">Moje mieszkania</h1>
+      <p class="text-body-secondary mb-0">Mieszkania, w których jesteś członkiem. Każde widzi wyłącznie swoje dane.</p>
+    </div>
+  </header>
+
+  {% if flats %}
+  <div class="row g-4">
+    {% for summary in flats %}
+    <div class="col-md-6 col-xl-4">
+      <article class="fm-card fm-flat-card">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <span class="fm-icon-chip"><i class="bi bi-house-door" aria-hidden="true"></i></span>
+          {%- if summary.is_admin %}
+          {{ badge("admin", "bi-star-fill", "primary") }}
+          {%- else %}
+          {{ badge("członek", "bi-person") }}
+          {%- endif %}
+        </div>
+        <h2 class="fm-flat-name">{{ summary.flat.name }}</h2>
+        <div class="d-flex justify-content-between align-items-center mt-auto pt-3">
+          {{ avatar_stack(summary.members) }}
+          <span class="small text-body-secondary">
+            <i class="bi bi-list-check me-1" aria-hidden="true"></i>{{ summary.open_tasks }} {{ summary.open_tasks|plural("zadanie", "zadania", "zadań") }} do zrobienia
+          </span>
+        </div>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  {{ empty_state("bi-house-add", "Nie należysz jeszcze do żadnego mieszkania", "Wkrótce utworzysz tu własne mieszkanie albo dołączysz do istniejącego przez link zaproszenia od admina.") }}
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{#-
+  Wybór koloru użytkownika z palety (D-6) dla pola RadioField z indeksami kolorów.
+  Pola radio zostają w HTML (klawiatura, czytniki ekranu), wizualnie to okrągłe próbki.
+  Style: css/components/color-picker.css
+-#}
+{% macro color_picker(field) -%}
+<fieldset class="mb-3">
+  <legend class="form-label">{{ field.label.text }}</legend>
+  <div class="fm-color-picker">
+    {%- for option in field %}
+    <label class="fm-color-option" title="{{ option.label.text }}">
+      {{ option(class_="fm-color-input") }}
+      <span class="fm-color-swatch u-color-{{ option.data }}" aria-hidden="true"></span>
+      <span class="visually-hidden">{{ option.label.text }}</span>
+    </label>
+    {%- endfor %}
+  </div>
+  {%- if field.errors %}
+  <div class="invalid-feedback d-block">
+    {%- for error in field.errors %}<div><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>{{ error }}</div>{% endfor -%}
+  </div>
+  {%- endif %}
+</fieldset>
+{%- endmacro %}

@@ -39,10 +39,13 @@ addopts = "-ra --strict-markers"
 [tool.coverage.run]
 source = ["backend"]
 branch = true
+# Migracje sprawdza osobny job CI (upgrade, downgrade, db check na PostgreSQL).
+omit = ["backend/migrations/*"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
+exclude_also = ["def __repr__"]
 
 [tool.bandit]
 exclude_dirs = ["tests", "backend/migrations", ".venv"]

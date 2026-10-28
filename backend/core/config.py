@@ -11,8 +11,12 @@ from __future__ import annotations
 import os
 import secrets
 from datetime import timedelta
+from pathlib import Path
 
 MIN_SECRET_KEY_LENGTH = 32
+
+# Awatary leżą wśród plików statycznych (losowe nazwy); w Dockerze to osobny wolumen.
+DEFAULT_AVATAR_UPLOAD_DIR = Path(__file__).resolve().parents[2] / "frontend" / "static" / "uploads" / "avatars"
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -35,6 +39,7 @@ def _require_env(name: str) -> str:
 class BaseConfig:
     """Ustawienia wspólne dla wszystkich środowisk."""
 
+    ENV_NAME = "base"
     DEBUG = False
     TESTING = False
 
@@ -49,6 +54,7 @@ class BaseConfig:
 
     # Limit rozmiaru żądania, m.in. dla awatarów: SR-9, T-10
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024
+    AVATAR_UPLOAD_DIR = DEFAULT_AVATAR_UPLOAD_DIR
 
     # Limity żądań: SR-2, T-03. Jeden proces gunicorna, więc wystarcza pamięć.
     RATELIMIT_STORAGE_URI = "memory://"
@@ -61,11 +67,14 @@ class BaseConfig:
         self.SECRET_KEY = os.environ.get("SECRET_KEY", "").strip()
         self.SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "").strip()
         self.TRUST_PROXY = _env_bool("TRUST_PROXY")
+        # Hasło kont demo dla `flask seed-demo` (niedostępne w produkcji).
+        self.DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "")
 
 
 class DevelopmentConfig(BaseConfig):
     """Lokalna praca nad aplikacją (http://localhost)."""
 
+    ENV_NAME = "development"
     SESSION_COOKIE_SECURE = False
     ENABLE_HSTS = False
     ENABLE_UI_PREVIEW = True
@@ -81,6 +90,7 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     """Testy automatyczne (pytest)."""
 
+    ENV_NAME = "testing"
     TESTING = True
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False
@@ -91,12 +101,16 @@ class TestingConfig(BaseConfig):
     def __init__(self) -> None:
         super().__init__()
         self.SECRET_KEY = secrets.token_hex(32)
-        # Domyślnie SQLite w pamięci; w CI i w Dockerze testy idą na PostgreSQL.
-        self.SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL", "sqlite://")
+        # Osobna baza PostgreSQL tylko dla testów: docker compose up -d db-test
+        self.SQLALCHEMY_DATABASE_URI = _require_env("TEST_DATABASE_URL")
 
 
 class ProductionConfig(BaseConfig):
     """Wdrożenie: wymaga kompletnej konfiguracji, inaczej aplikacja nie startuje."""
+
+    ENV_NAME = "production"
+    # Prefiks __Host-: przeglądarka przyjmie ciasteczko tylko przez HTTPS, bez domeny, dla ścieżki /.
+    SESSION_COOKIE_NAME = "__Host-flatmate"
 
     def __init__(self) -> None:
         super().__init__()

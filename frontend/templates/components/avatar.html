@@ -1,11 +1,14 @@
 {#-
-  Awatar z inicjałami w kolorze użytkownika; bez osoby: pusty awatar „do wzięcia”.
-  member: {name, initials, color}; size: "" | "sm" | "lg". Style: css/components/avatar.css
+  Awatar osoby: zdjęcie, a bez niego inicjały w kolorze użytkownika; bez osoby: pusty awatar „do wzięcia”.
+  member: obiekt User albo słownik z polami display_name, initials, color_index, avatar_filename.
+  size: "" | "sm" | "lg" | "xl". Style: css/components/avatar.css
 -#}
 {% macro avatar(member, size="") -%}
 {%- set size_class = " fm-avatar-" ~ size if size else "" -%}
-{%- if member -%}
-<span class="fm-avatar{{ size_class }} u-color-{{ member.color }}" title="{{ member.name }}">{{ member.initials }}</span>
+{%- if member and member.avatar_filename -%}
+<img class="fm-avatar fm-avatar-img{{ size_class }}" src="{{ url_for('static', filename='uploads/avatars/' ~ member.avatar_filename) }}" alt="" title="{{ member.display_name }}">
+{%- elif member -%}
+<span class="fm-avatar{{ size_class }} u-color-{{ member.color_index }}" title="{{ member.display_name }}">{{ member.initials }}</span>
 {%- else -%}
 <span class="fm-avatar fm-avatar-empty{{ size_class }}" title="Do wzięcia"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
 {%- endif -%}

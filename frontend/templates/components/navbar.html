@@ -1,9 +1,20 @@
 {#-
   Główny pasek nawigacji. Style: css/components/navbar.css
-  Import z kontekstem (korzysta z config): {% from "components/navbar.html" import navbar with context %}
+  Import z kontekstem (korzysta z config, request i current_user):
+  {% from "components/navbar.html" import navbar with context %}
 -#}
 {% from "components/brand.html" import brand %}
 {% from "components/theme_toggle.html" import theme_toggle %}
+{% from "components/user_menu.html" import user_menu %}
+
+{% macro nav_link(endpoint, label, icon) -%}
+{%- set active = request.endpoint == endpoint -%}
+<li class="nav-item">
+  <a class="nav-link{% if active %} active{% endif %}" href="{{ url_for(endpoint) }}"{% if active %} aria-current="page"{% endif %}>
+    <i class="bi {{ icon }} me-1" aria-hidden="true"></i>{{ label }}
+  </a>
+</li>
+{%- endmacro %}
 
 {% macro navbar() -%}
 <nav class="navbar navbar-expand-lg fm-navbar sticky-top" aria-label="Główna nawigacja">
@@ -12,9 +23,12 @@
 
     <div class="d-flex align-items-center gap-1 order-lg-last">
       {{ theme_toggle() }}
-      {# Etap 4: menu zalogowanego użytkownika (mieszkania, profil, wylogowanie). #}
+      {%- if current_user.is_authenticated %}
+      {{ user_menu(current_user) }}
+      {%- else %}
       <a class="btn btn-ghost d-none d-sm-inline-flex" href="{{ url_for('auth.login') }}">Zaloguj się</a>
       <a class="btn btn-primary d-none d-sm-inline-flex" href="{{ url_for('auth.register') }}">Załóż konto</a>
+      {%- endif %}
       <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#fm-navbar" aria-controls="fm-navbar" aria-expanded="false" aria-label="Pokaż menu">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -22,18 +36,25 @@
 
     <div class="collapse navbar-collapse" id="fm-navbar">
       <ul class="navbar-nav mx-lg-auto pt-3 pt-lg-0">
+        {%- if current_user.is_authenticated %}
+        {{ nav_link("flats.index", "Moje mieszkania", "bi-houses") }}
+        {{ nav_link("profile.index", "Profil", "bi-person-gear") }}
+        {%- else %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#funkcje">Funkcje</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#jak-to-dziala">Jak to działa</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#bezpieczenstwo">Bezpieczeństwo</a></li>
+        {%- endif %}
         {% if config.ENABLE_UI_PREVIEW %}
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('ui.components') }}">Komponenty <span class="fm-badge fm-badge-violet ms-1">dev</span></a>
         </li>
         {% endif %}
+        {%- if not current_user.is_authenticated %}
         <li class="nav-item d-grid gap-2 d-sm-none py-3">
           <a class="btn btn-neutral" href="{{ url_for('auth.login') }}">Zaloguj się</a>
           <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Załóż konto</a>
         </li>
+        {%- endif %}
       </ul>
     </div>
   </div>

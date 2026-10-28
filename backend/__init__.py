@@ -25,10 +25,13 @@ from dotenv import load_dotenv
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from backend.audit import configure_audit_logging
+from backend.cli import register_cli
 from backend.controllers import register_controllers
 from backend.core.config import get_config
 from backend.core.extensions import init_extensions
 from backend.security.headers import register_security_headers
+from backend.security.session import init_session
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
@@ -60,7 +63,10 @@ def create_app(config_name: str | None = None, overrides: dict[str, Any] | None 
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)  # type: ignore[method-assign]
 
     init_extensions(app)
+    init_session()
+    configure_audit_logging(app)
     register_security_headers(app)
     register_controllers(app)
+    register_cli(app)
 
     return app

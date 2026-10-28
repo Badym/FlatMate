@@ -11,7 +11,7 @@ venv/
 *.db
 *.sqlite3
 instance/
-app/static/uploads/
+frontend/static/uploads/
 
 # Narzędzia
 .pytest_cache/

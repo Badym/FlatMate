@@ -1,0 +1,43 @@
+/* Wybór koloru z palety (components/color_picker.html). */
+
+.fm-color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.fm-color-option {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Pole radio zostaje dostępne dla klawiatury i czytników ekranu. */
+.fm-color-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fm-color-swatch {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--fm-user-color);
+  box-shadow: 0 0 0 2px var(--fm-surface), 0 0 0 3px var(--fm-border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fm-color-option:hover .fm-color-swatch {
+  transform: scale(1.08);
+}
+
+.fm-color-input:checked + .fm-color-swatch {
+  box-shadow: 0 0 0 3px var(--fm-surface), 0 0 0 5px var(--fm-user-color);
+}
+
+.fm-color-input:focus-visible + .fm-color-swatch {
+  outline: 2px solid var(--fm-primary);
+  outline-offset: 5px;
+}

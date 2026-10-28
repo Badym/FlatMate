@@ -84,3 +84,17 @@ def test_trust_proxy_flag(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TRUST_PROXY", "1")
 
     assert config_module.TestingConfig().TRUST_PROXY is True
+
+
+def test_testing_requires_test_database(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TEST_DATABASE_URL", raising=False)
+
+    with pytest.raises(RuntimeError, match="TEST_DATABASE_URL"):
+        config_module.TestingConfig()
+
+
+def test_production_session_cookie_uses_host_prefix(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SECRET_KEY", VALID_SECRET)
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+
+    assert ProductionConfig().SESSION_COOKIE_NAME == "__Host-flatmate"

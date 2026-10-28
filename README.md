@@ -57,13 +57,29 @@ Wymagania: [Docker](https://docs.docker.com/get-docker/) z Docker Compose oraz [
 
    W tym trybie pod http://localhost:8000/_ui/ jest biblioteka komponentów interfejsu.
 
-4. Testy:
+4. Dane demonstracyjne: 3 konta `@flatmate.example`, mieszkanie i zadania. Hasło do kont to wartość `DEMO_PASSWORD` z `.env`:
+
+   ```bash
+   docker compose exec web flask --app wsgi seed-demo           # w działającym kontenerze
+   uv run flask --app wsgi seed-demo --reset                    # poza Dockerem, od nowa
+   ```
+
+   Potem zaloguj się na http://localhost:8000/login, np. jako `ola@flatmate.example` (admin mieszkania demo). W środowisku produkcyjnym polecenie odmawia działania.
+
+5. Testy:
 
    ```bash
    docker compose --profile test run --rm tests   # na PostgreSQL, tak jak w CI
-   uv sync && uv run pytest                       # lokalnie, na SQLite w pamięci
+   docker compose up -d db-test && uv run pytest  # lokalnie, na tej samej bazie testowej PostgreSQL
+   ```
+
+6. Zmiana modeli wymaga migracji w tym samym PR-ze:
+
+   ```bash
+   uv run flask --app wsgi db migrate -m "opis zmiany"
+   uv run flask --app wsgi db upgrade
    ```
 
 Gdy porty 8000 lub 5432 są zajęte, zmień `WEB_PORT` i `POSTGRES_PORT` w `.env`.
 
-Szczegóły architektury, model danych i etapy prac: [docs/PLAN_IMPLEMENTACJI.md](docs/PLAN_IMPLEMENTACJI.md).
+Szczegóły architektury i etapy prac: [docs/PLAN_IMPLEMENTACJI.md](docs/PLAN_IMPLEMENTACJI.md). Model danych: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).

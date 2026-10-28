@@ -1,0 +1,75 @@
+{#- Profil (profile.index): dane i kolor, awatar, zmiana hasła. Style: css/pages/profile.css -#}
+{% extends "layouts/base.html" %}
+{% from "components/avatar.html" import avatar %}
+{% from "components/color_picker.html" import color_picker %}
+{% from "components/form_field.html" import form_field %}
+
+{% block title %}Profil · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="fm-profile">
+    <header class="fm-page-header">
+      <div class="d-flex align-items-center gap-3">
+        {{ avatar(current_user, "xl") }}
+        <div>
+          <h1 class="fm-page-title mb-1">{{ current_user.display_name }}</h1>
+          <p class="text-body-secondary mb-0"><i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ current_user.email }}</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="fm-card fm-profile-section" aria-labelledby="profile-data-title">
+      <h2 class="fm-section-heading" id="profile-data-title">Dane profilu</h2>
+      <p class="text-body-secondary">Nazwa i kolor są widoczne dla współlokatorów przy zadaniach i w kalendarzu.</p>
+      <form method="post" action="{{ url_for('profile.update') }}" novalidate>
+        {{ profile_form.hidden_tag() }}
+        {{ form_field(profile_form.display_name, icon="bi-person", attrs={"autocomplete": "nickname"}) }}
+        {{ color_picker(profile_form.color_index) }}
+        <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+      </form>
+    </section>
+
+    <section class="fm-card fm-profile-section" aria-labelledby="profile-avatar-title">
+      <h2 class="fm-section-heading" id="profile-avatar-title">Awatar</h2>
+      <p class="text-body-secondary">PNG lub JPEG do 2 MB. Obraz zostanie przycięty do 256×256 px, a metadane (np. lokalizacja) usunięte.</p>
+      <div>
+        <div>
+          <form method="post" action="{{ url_for('profile.upload_avatar') }}" enctype="multipart/form-data" novalidate>
+            {{ avatar_form.hidden_tag() }}
+            <label class="form-label" for="{{ avatar_form.file.id }}">{{ avatar_form.file.label.text }}</label>
+            {{ avatar_form.file(class_="form-control" ~ (" is-invalid" if avatar_form.file.errors else ""), accept="image/png,image/jpeg") }}
+            {%- if avatar_form.file.errors %}
+            <div class="invalid-feedback d-block">
+              {%- for error in avatar_form.file.errors %}<div><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>{{ error }}</div>{% endfor -%}
+            </div>
+            {%- endif %}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button type="submit" class="btn btn-soft"><i class="bi bi-upload" aria-hidden="true"></i>Wgraj awatar</button>
+            </div>
+          </form>
+          {%- if current_user.avatar_filename %}
+          <form method="post" action="{{ url_for('profile.delete_avatar') }}" class="mt-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-soft-danger btn-sm"><i class="bi bi-trash3" aria-hidden="true"></i>Usuń awatar</button>
+          </form>
+          {%- endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="fm-card fm-profile-section" aria-labelledby="profile-password-title">
+      <h2 class="fm-section-heading" id="profile-password-title">Zmiana hasła</h2>
+      <p class="text-body-secondary">Po zmianie hasła wszystkie inne urządzenia zostaną wylogowane.</p>
+      <form method="post" action="{{ url_for('profile.change_password') }}" novalidate>
+        {{ password_form.hidden_tag() }}
+        {{ form_field(password_form.current_password, icon="bi-lock", password_toggle=True, attrs={"autocomplete": "current-password"}) }}
+        {{ form_field(password_form.new_password, icon="bi-key", password_toggle=True, meter=True,
+                      help="Minimum " ~ password_min_length ~ " znaków.", attrs={"autocomplete": "new-password"}) }}
+        {{ form_field(password_form.new_password_confirm, icon="bi-shield-check", password_toggle=True, attrs={"autocomplete": "new-password"}) }}
+        <button type="submit" class="btn btn-primary">Zmień hasło</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}
