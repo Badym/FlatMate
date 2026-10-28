@@ -38,6 +38,8 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 
 ## Uruchomienie
 
+Instrukcja krok po kroku dla komputera bez zainstalowanych narzędzi: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
+
 Wymagania: [Docker](https://docs.docker.com/get-docker/) z Docker Compose oraz [uv](https://docs.astral.sh/uv/) (do pracy poza kontenerami).
 
 1. Skopiuj `.env.example` do `.env` i uzupełnij `SECRET_KEY` oraz `POSTGRES_PASSWORD`. Wartości wygenerujesz poleceniem `uv run python -c "import secrets; print(secrets.token_hex(32))"`.
