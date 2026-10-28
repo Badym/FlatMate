@@ -11,10 +11,10 @@ from __future__ import annotations
 from typing import Any
 
 MEMBERS: list[dict[str, Any]] = [
-    {"display_name": "Ola Nowak", "initials": "ON", "color_index": 0, "points": 64, "role": "admin"},
-    {"display_name": "Kuba Wiśniewski", "initials": "KW", "color_index": 9, "points": 51, "role": "member"},
-    {"display_name": "Marta Zając", "initials": "MZ", "color_index": 3, "points": 38, "role": "member"},
-    {"display_name": "Piotr Lis", "initials": "PL", "color_index": 6, "points": 22, "role": "member"},
+    {"display_name": "Ola Nowak", "initials": "ON", "color_index": 0, "role": "admin"},
+    {"display_name": "Kuba Wiśniewski", "initials": "KW", "color_index": 9, "role": "member"},
+    {"display_name": "Marta Zając", "initials": "MZ", "color_index": 3, "role": "member"},
+    {"display_name": "Piotr Lis", "initials": "PL", "color_index": 6, "role": "member"},
 ]
 
 TASKS: list[dict[str, Any]] = [
@@ -26,7 +26,6 @@ TASKS: list[dict[str, Any]] = [
         "status": "today",
         "mode": "rotation",
         "assignee": MEMBERS[0],
-        "points": 15,
     },
     {
         "title": "Zakupy: środki czystości",
@@ -36,7 +35,6 @@ TASKS: list[dict[str, Any]] = [
         "status": "pool",
         "mode": "pool",
         "assignee": None,
-        "points": 10,
     },
     {
         "title": "Wyniesienie śmieci",
@@ -46,7 +44,6 @@ TASKS: list[dict[str, Any]] = [
         "status": "overdue",
         "mode": "fixed",
         "assignee": MEMBERS[1],
-        "points": 5,
     },
     {
         "title": "Odkurzanie salonu",
@@ -56,7 +53,6 @@ TASKS: list[dict[str, Any]] = [
         "status": "upcoming",
         "mode": "rotation",
         "assignee": MEMBERS[2],
-        "points": 10,
     },
     {
         "title": "Rozmrożenie lodówki",
@@ -66,7 +62,6 @@ TASKS: list[dict[str, Any]] = [
         "status": "done",
         "mode": "fixed",
         "assignee": MEMBERS[3],
-        "points": 20,
     },
 ]
 

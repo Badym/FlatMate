@@ -1,6 +1,6 @@
 # FlatMate – menedżer mieszkania współdzielonego
 
-Aplikacja webowa do podziału obowiązków w mieszkaniu współdzielonym: zadania domowe jednorazowe i cykliczne z rotacją osób, punkty za wykonane zadania i kalendarz. Każde mieszkanie to osobna, odizolowana grupa.
+Aplikacja webowa do podziału obowiązków w mieszkaniu współdzielonym: zadania domowe jednorazowe i cykliczne z rotacją osób, pula zadań do wzięcia i wspólny kalendarz. Każde mieszkanie to osobna, odizolowana grupa.
 
 Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Operacje (DevSecOps)**, Politechnika Śląska.
 

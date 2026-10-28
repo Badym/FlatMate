@@ -1,6 +1,6 @@
 {#-
   Wiersz zadania na liście. Style: css/components/task-item.css
-  task: {title, icon, due, status, mode, assignee, points}
+  task: {title, icon, due, status, mode, assignee}
   interactive=False: makieta bez elementów fokusowalnych (np. w hero strony głównej).
 -#}
 {% from "components/avatar.html" import avatar %}
@@ -15,7 +15,6 @@
     <div class="fm-task-meta">
       <span><i class="bi bi-calendar-event" aria-hidden="true"></i>{{ task.due }}</span>
       <span><i class="bi {{ mode_icon }}" aria-hidden="true"></i>{{ mode_label }}</span>
-      <span><i class="bi bi-lightning-charge" aria-hidden="true"></i>{{ task.points }} pkt</span>
     </div>
   </div>
   <div class="d-flex align-items-center gap-2">

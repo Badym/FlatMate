@@ -21,7 +21,6 @@
 
     <section class="fm-card fm-profile-section" aria-labelledby="profile-data-title">
       <h2 class="fm-section-heading" id="profile-data-title">Dane profilu</h2>
-      <p class="text-body-secondary">Nazwa i kolor są widoczne dla współlokatorów przy zadaniach i w kalendarzu.</p>
       <form method="post" action="{{ url_for('profile.update') }}" novalidate>
         {{ profile_form.hidden_tag() }}
         {{ form_field(profile_form.display_name, icon="bi-person", attrs={"autocomplete": "nickname"}) }}
@@ -32,7 +31,7 @@
 
     <section class="fm-card fm-profile-section" aria-labelledby="profile-avatar-title">
       <h2 class="fm-section-heading" id="profile-avatar-title">Awatar</h2>
-      <p class="text-body-secondary">PNG lub JPEG do 2 MB. Obraz zostanie przycięty do 256×256 px, a metadane (np. lokalizacja) usunięte.</p>
+      <p class="text-body-secondary">PNG lub JPEG, do 2 MB.</p>
       <div>
         <div>
           <form method="post" action="{{ url_for('profile.upload_avatar') }}" enctype="multipart/form-data" novalidate>
@@ -60,7 +59,6 @@
 
     <section class="fm-card fm-profile-section" aria-labelledby="profile-password-title">
       <h2 class="fm-section-heading" id="profile-password-title">Zmiana hasła</h2>
-      <p class="text-body-secondary">Po zmianie hasła wszystkie inne urządzenia zostaną wylogowane.</p>
       <form method="post" action="{{ url_for('profile.change_password') }}" novalidate>
         {{ password_form.hidden_tag() }}
         {{ form_field(password_form.current_password, icon="bi-lock", password_toggle=True, attrs={"autocomplete": "current-password"}) }}

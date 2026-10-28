@@ -6,7 +6,7 @@
  * layouty → strony → klasy pomocnicze. Nowy plik dopisz w odpowiedniej grupie.
  *
  * Bez atrybutów style w HTML (CSP: style-src 'self'): kolory użytkowników
- * i szerokości pasków to klasy (.u-color-N, .fm-w-N).
+ * to klasy (.u-color-N).
  */
 
 @import url("base/fonts.css");
@@ -24,7 +24,7 @@
 @import url("components/avatar.css");
 @import url("components/badge.css");
 @import url("components/task-item.css");
-@import url("components/ranking.css");
+@import url("components/member-list.css");
 @import url("components/calendar.css");
 @import url("components/empty-state.css");
 @import url("components/page-header.css");

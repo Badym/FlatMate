@@ -153,14 +153,6 @@ class TestTask:
             db.session.commit()
         db.session.rollback()
 
-    @pytest.mark.parametrize("points", [0, 101])
-    def test_points_range(self, make_flat, task_type, points: int) -> None:
-        db.session.add(_task(make_flat(), task_type, points=points))
-
-        with pytest.raises(IntegrityError):
-            db.session.commit()
-        db.session.rollback()
-
     def test_occurrence_number_is_unique_in_series(self, make_flat, task_type) -> None:
         flat = make_flat()
         template = _task(flat, task_type, recurrence=Recurrence.WEEKLY)

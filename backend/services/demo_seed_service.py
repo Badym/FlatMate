@@ -118,7 +118,6 @@ class DemoSeedService:
                 task_type=task_type,
                 title=title,
                 due_date=today + timedelta(days=due_offset),
-                points=task_type.default_points,
                 assignee=assignee,
                 created_by=admin,
                 assignment_mode=AssignmentMode.FIXED if assignee else AssignmentMode.POOL,

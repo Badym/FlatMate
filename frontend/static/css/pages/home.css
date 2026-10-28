@@ -1,4 +1,4 @@
-/* Strona główna (pages/home.html): sekcje, hero, makieta, funkcje, kroki, bezpieczeństwo, CTA. */
+/* Strona główna (pages/home.html): sekcje, hero z makietą, funkcje, kroki, wezwanie do działania. */
 
 .fm-section {
   padding: 5.5rem 0;
@@ -71,49 +71,6 @@
   letter-spacing: -0.045em;
 }
 
-.fm-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.3rem 0.85rem 0.3rem 0.3rem;
-  border: 1px solid var(--fm-border);
-  border-radius: 999px;
-  background: var(--fm-surface);
-  box-shadow: var(--fm-shadow-sm);
-  color: var(--fm-muted);
-  font-size: 0.86rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.fm-pill:hover {
-  color: var(--fm-text);
-  border-color: rgba(var(--fm-primary-rgb), 0.35);
-}
-
-.fm-pill-tag {
-  padding: 0.18rem 0.55rem;
-  border-radius: 999px;
-  background: var(--fm-gradient);
-  color: #fff;
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-
-.fm-trust {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem 1.5rem;
-  color: var(--fm-muted);
-  font-size: 0.92rem;
-}
-
-.fm-trust .bi {
-  margin-right: 0.35rem;
-  color: #16a34a;
-}
-
 /* Makieta aplikacji w hero */
 .fm-preview {
   position: relative;
@@ -138,21 +95,6 @@
   border-bottom: 1px solid var(--fm-border);
 }
 
-.fm-preview-url {
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0.2rem 0.75rem;
-  border-radius: 999px;
-  background: var(--fm-surface);
-  color: var(--fm-muted);
-  font-size: 0.75rem;
-}
-
-.fm-preview-url .bi {
-  margin-right: 0.3rem;
-  color: #16a34a;
-}
-
 .fm-dot {
   width: 0.65rem;
   height: 0.65rem;
@@ -166,32 +108,6 @@
 
 .fm-preview-body {
   padding: 1.25rem;
-}
-
-.fm-kicker {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fm-muted);
-}
-
-.fm-mini-stat {
-  padding: 0.65rem 0.8rem;
-  border-radius: var(--fm-radius-sm);
-  background: var(--fm-surface-2);
-}
-
-.fm-mini-stat span {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--fm-muted);
-}
-
-.fm-mini-stat strong {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
 }
 
 .fm-floating {
@@ -214,11 +130,6 @@
   .fm-floating {
     display: flex;
   }
-}
-
-.fm-floating-points {
-  bottom: -1.75rem;
-  left: -2.5rem;
 }
 
 .fm-floating-rotation {
@@ -248,9 +159,9 @@
 
 /* Kroki */
 .fm-step {
-  position: relative;
   height: 100%;
-  padding: 1.75rem;
+  padding: 0.5rem 1.5rem;
+  text-align: center;
 }
 
 .fm-step-number {
@@ -273,61 +184,6 @@
 .fm-step p {
   margin: 0;
   color: var(--fm-muted);
-}
-
-/* Panel bezpieczeństwa (zawsze ciemny) */
-.fm-security {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: clamp(2rem, 4vw, 3.75rem);
-  border-radius: 1.75rem;
-  background: #0b0b1a;
-  color: #e8e9f1;
-  box-shadow: var(--fm-shadow-lg);
-}
-
-.fm-security::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(30rem 20rem at 0% 0%, rgba(99, 102, 241, 0.35), transparent 60%),
-    radial-gradient(26rem 18rem at 100% 100%, rgba(192, 38, 211, 0.25), transparent 60%);
-}
-
-.fm-security-item {
-  height: 100%;
-  padding: 1.25rem;
-  border-radius: var(--fm-radius);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.fm-security-item h3 {
-  margin: 0.9rem 0 0.35rem;
-  font-size: 1rem;
-  color: #fff;
-}
-
-.fm-security-item p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #a7aac2;
-}
-
-.fm-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.65rem;
-  border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #d4d6e8;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: 0.78rem;
 }
 
 /* Wezwanie do działania */
@@ -360,10 +216,6 @@
   color: #fff;
 }
 
-.fm-cta p {
-  color: rgba(255, 255, 255, 0.85);
-}
-
 .fm-cta .btn-light {
   --bs-btn-color: #3730a3;
   --bs-btn-hover-color: #312e81;
@@ -372,9 +224,4 @@
   --bs-btn-border-color: transparent;
   --bs-btn-hover-border-color: transparent;
   box-shadow: 0 10px 24px -10px rgba(15, 18, 34, 0.45);
-}
-
-.fm-cta .btn-outline-light {
-  --bs-btn-hover-color: #3730a3;
-  --bs-btn-border-color: rgba(255, 255, 255, 0.5);
 }

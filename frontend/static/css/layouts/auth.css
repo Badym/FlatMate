@@ -69,13 +69,6 @@
   color: #fff;
 }
 
-.fm-auth-sub {
-  max-width: 28rem;
-  margin-top: 1rem;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 1.05rem;
-}
-
 .fm-glass {
   max-width: 26rem;
   padding: 1rem;
@@ -87,11 +80,6 @@
   box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
 }
 
-.fm-glass + .fm-glass {
-  margin-top: 0.75rem;
-  margin-left: 2.5rem;
-}
-
 .fm-glass .fm-icon-chip {
   --fm-chip-rgb: 199, 203, 255;
 }
@@ -99,19 +87,6 @@
 .fm-glass-meta {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.65);
-}
-
-.fm-auth-points {
-  display: grid;
-  gap: 0.6rem;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.95rem;
-}
-
-.fm-auth-points .bi {
-  margin-right: 0.5rem;
-  color: #86efac;
 }
 
 .fm-auth-main {
@@ -132,15 +107,4 @@
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.035em;
-}
-
-.fm-auth-footnote {
-  text-align: center;
-  color: var(--fm-muted);
-  font-size: 0.8rem;
-}
-
-.fm-auth-footnote .bi {
-  margin-right: 0.3rem;
-  color: #16a34a;
 }

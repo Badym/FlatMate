@@ -74,6 +74,6 @@ Wszystkie komponenty na przykładowych danych są w bibliotece pod `/_ui/` (tylk
 - **Bez inline JS i CSS.** CSP pozwala tylko na pliki z serwera (`script-src 'self'`, `style-src 'self'`), więc w szablonach nie ma `<script>` bez `src`, atrybutów `onclick=` ani `style=`. Pilnuje tego `scripts/check_templates.py` w CI.
 - **Bez `|safe` i `Markup()`** na danych użytkownika: Jinja2 sama escapuje treść (ochrona przed XSS).
 - **Zachowania przez atrybuty `data-fm-*`.** Moduł w `js/components/` szuka swoich atrybutów, a HTML nie zawiera kodu.
-- **Kolory i szerokości jako klasy.** Kolor użytkownika to `.u-color-N` (paleta w `backend/core/constants.py`), szerokość paska to `.fm-w-0` … `.fm-w-100`.
+- **Kolory jako klasy.** Kolor użytkownika to `.u-color-N` (paleta w `backend/core/constants.py`), bez atrybutu `style`.
 - **Tokeny zamiast wartości na sztywno.** Kolory, cienie i promienie biorą się z `css/base/tokens.css`, dzięki czemu tryb ciemny działa automatycznie.
 - **Nowy komponent:** plik w `templates/components/`, styl w `static/css/components/` dopisany do `main.css`, ewentualny moduł w `static/js/components/` uruchomiony w `main.js`, przykład w `/_ui/`. Test `tests/frontend/test_structure.py` sprawdza, że każdy plik CSS jest zaimportowany i każdy szablon się kompiluje.
