@@ -11,8 +11,12 @@ from __future__ import annotations
 import os
 import secrets
 from datetime import timedelta
+from pathlib import Path
 
 MIN_SECRET_KEY_LENGTH = 32
+
+# Awatary leżą wśród plików statycznych (losowe nazwy); w Dockerze to osobny wolumen.
+DEFAULT_AVATAR_UPLOAD_DIR = Path(__file__).resolve().parents[2] / "frontend" / "static" / "uploads" / "avatars"
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -50,6 +54,7 @@ class BaseConfig:
 
     # Limit rozmiaru żądania, m.in. dla awatarów: SR-9, T-10
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024
+    AVATAR_UPLOAD_DIR = DEFAULT_AVATAR_UPLOAD_DIR
 
     # Limity żądań: SR-2, T-03. Jeden proces gunicorna, więc wystarcza pamięć.
     RATELIMIT_STORAGE_URI = "memory://"
@@ -104,6 +109,8 @@ class ProductionConfig(BaseConfig):
     """Wdrożenie: wymaga kompletnej konfiguracji, inaczej aplikacja nie startuje."""
 
     ENV_NAME = "production"
+    # Prefiks __Host-: przeglądarka przyjmie ciasteczko tylko przez HTTPS, bez domeny, dla ścieżki /.
+    SESSION_COOKIE_NAME = "__Host-flatmate"
 
     def __init__(self) -> None:
         super().__init__()

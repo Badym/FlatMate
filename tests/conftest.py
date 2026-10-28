@@ -15,12 +15,15 @@ import itertools
 import secrets
 from collections.abc import Callable, Iterator
 from functools import cache
+from io import BytesIO
+from pathlib import Path
 from typing import Any
 
 import pytest
 from dotenv import load_dotenv
 from flask import Flask, g, has_app_context
 from flask.testing import FlaskClient
+from PIL import Image
 from sqlalchemy.exc import OperationalError
 
 from backend import create_app
@@ -58,11 +61,18 @@ class IsolatedClient(FlaskClient):
 
 
 @pytest.fixture
-def make_app() -> Iterator[Callable[..., Flask]]:
+def avatar_dir(tmp_path: Path) -> Path:
+    """Awatary zapisywane w testach trafiają do katalogu tymczasowego, nie do repozytorium."""
+    return tmp_path / "avatars"
+
+
+@pytest.fixture
+def make_app(avatar_dir: Path) -> Iterator[Callable[..., Flask]]:
     """Fabryka aplikacji testowych z własnymi ustawieniami (np. włączonym CSRF)."""
     created: list[Flask] = []
 
     def factory(**overrides: Any) -> Flask:
+        overrides.setdefault("AVATAR_UPLOAD_DIR", avatar_dir)
         application = create_app("testing", overrides=overrides)
         application.test_client_class = IsolatedClient
         with application.app_context():
@@ -159,6 +169,26 @@ def default_task_types(app_ctx: Flask) -> list[TaskType]:
     db.session.add_all(task_types)
     db.session.commit()
     return task_types
+
+
+@pytest.fixture
+def test_password() -> str:
+    """Hasło kont z ``make_user`` (do logowania przez formularz)."""
+    return TEST_PASSWORD
+
+
+@pytest.fixture
+def image_bytes() -> Callable[..., bytes]:
+    """Generuje obraz w pamięci: image_bytes("PNG", (64, 64)), opcjonalnie z EXIF."""
+
+    def make(image_format: str = "PNG", size: tuple[int, int] = (64, 64), mode: str = "RGB", exif=None) -> bytes:
+        image = Image.new(mode, size, color="#4f46e5" if mode != "L" else 128)
+        output = BytesIO()
+        options = {"exif": exif} if exif is not None else {}
+        image.save(output, format=image_format, **options)
+        return output.getvalue()
+
+    return make
 
 
 @pytest.fixture
