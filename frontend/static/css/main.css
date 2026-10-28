@@ -29,6 +29,7 @@
 @import url("components/empty-state.css");
 @import url("components/page-header.css");
 @import url("components/user-menu.css");
+@import url("components/color-picker.css");
 
 @import url("layouts/auth.css");
 
@@ -36,6 +37,7 @@
 @import url("pages/error.css");
 @import url("pages/ui-components.css");
 @import url("pages/flats.css");
+@import url("pages/profile.css");
 
 @import url("base/utilities.css");
 @import url("base/animations.css");

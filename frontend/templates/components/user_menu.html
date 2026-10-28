@@ -18,6 +18,7 @@
     </li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="{{ url_for('flats.index') }}"><i class="bi bi-houses" aria-hidden="true"></i>Moje mieszkania</a></li>
+    <li><a class="dropdown-item" href="{{ url_for('profile.index') }}"><i class="bi bi-person-gear" aria-hidden="true"></i>Profil</a></li>
     <li><hr class="dropdown-divider"></li>
     <li>
       <form method="post" action="{{ url_for('auth.logout') }}">

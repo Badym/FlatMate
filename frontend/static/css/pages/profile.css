@@ -1,0 +1,20 @@
+/* Profil (pages/profile/index.html). */
+
+.fm-profile {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.fm-profile-section {
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.fm-profile-section + .fm-profile-section {
+  margin-top: 1.5rem;
+}
+
+.fm-section-heading {
+  margin-bottom: 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}

@@ -14,6 +14,7 @@ from backend.controllers import (
     auth_controller,
     flats_controller,
     main_controller,
+    profile_controller,
     ui_controller,
 )
 from backend.controllers.error_controller import register_error_handlers
@@ -23,6 +24,7 @@ def register_controllers(app: Flask) -> None:
     app.register_blueprint(main_controller.bp)
     app.register_blueprint(auth_controller.bp)
     app.register_blueprint(flats_controller.bp)
+    app.register_blueprint(profile_controller.bp)
     if app.config["ENABLE_UI_PREVIEW"]:
         app.register_blueprint(ui_controller.bp)
     register_error_handlers(app)

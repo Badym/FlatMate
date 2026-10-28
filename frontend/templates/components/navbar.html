@@ -38,6 +38,7 @@
       <ul class="navbar-nav mx-lg-auto pt-3 pt-lg-0">
         {%- if current_user.is_authenticated %}
         {{ nav_link("flats.index", "Moje mieszkania", "bi-houses") }}
+        {{ nav_link("profile.index", "Profil", "bi-person-gear") }}
         {%- else %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#funkcje">Funkcje</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#jak-to-dziala">Jak to działa</a></li>
