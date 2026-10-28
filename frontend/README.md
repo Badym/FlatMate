@@ -45,7 +45,7 @@ Treść do środka komponentu przekazuje się blokiem `call` (odpowiednik `child
 {% endcall %}
 ```
 
-Komponenty korzystające z kontekstu żądania (`config`, `current_year`, później `current_user`) importuje się z `with context`, np. `navbar` i `footer` w `layouts/base.html`.
+Komponenty korzystające z kontekstu żądania (`config`, `request`, `current_user`, `current_year`) importuje się z `with context`, np. `navbar` i `footer` w `layouts/base.html`.
 
 | Komponent | Plik | Styl | JS |
 | --- | --- | --- | --- |
@@ -60,6 +60,12 @@ Komponenty korzystające z kontekstu żądania (`config`, `current_year`, późn
 | `task_item()` | components/task_item.html | components/task-item.css | – |
 | `stat_card()` | components/stat_card.html | components/card.css | – |
 | `empty_state()` | components/empty_state.html | components/empty-state.css | – |
+| `user_menu()` | components/user_menu.html | components/user-menu.css | Bootstrap dropdown |
+| `color_picker()` | components/color_picker.html | components/color-picker.css | – |
+
+`avatar` przyjmuje obiekt `User` albo słownik z tymi samymi polami (`display_name`, `initials`, `color_index`, `avatar_filename`), więc ten sam komponent obsługuje prawdziwe ekrany i makiety z `backend/demo_data.py`.
+
+Filtr `plural` odmienia słowa po liczebniku: `{{ n }} {{ n|plural("zadanie", "zadania", "zadań") }}`.
 
 Wszystkie komponenty na przykładowych danych są w bibliotece pod `/_ui/` (tylko tryb deweloperski).
 

@@ -43,6 +43,8 @@ backend/
 - **Każda trasa mieszkania ma `<int:flat_id>` i dekorator** `@flat_member_required` albo `@flat_admin_required` (`security/access.py`). Dekorator wymaga zalogowania, ładuje `g.flat` i `g.membership`, zwraca 404 osobie spoza mieszkania i 403 członkowi bez roli admina.
 - **ID z formularzy sprawdzaj względem mieszkania:** osobę przez `MembershipService.is_active_member` (lista wyboru: `member_choices`), typ zadania przez `TaskTypeRepository.get_available`.
 - **Zdarzenia bezpieczeństwa przez `audit_event("nazwa", pole=…)`** (`audit.py`). IP, ścieżka i ID użytkownika dochodzą same, a pola z „password”, „token” czy „secret” w nazwie są ukrywane.
+- **Logowanie i wylogowanie tylko przez `start_session` i `end_session`** (`security/session.py`): czyszczą sesję i ustawiają jej czas życia. Logika kont (blokada, liczniki, tokeny) jest w `AuthService`, kontroler jedynie łączy jedno z drugim.
+- **Przekierowanie po zalogowaniu tylko przez `is_safe_next`** (`security/redirects.py`), nigdy wprost z `request.args`.
 - **Hasła tylko przez `security/passwords.py`:** `hash_password` i `verify_password` (stały czas także dla nieistniejącego konta).
 - **Dane mieszkania zawsze przez `FlatScopedRepository`.** Nie ma w nim `get(id)`, tylko `get_in_flat(flat_id, id)`, więc podmiana ID w adresie nie da dostępu do cudzego mieszkania (T-01).
 - **Tylko ORM.** Bez SQL sklejanego z tekstu, nawet przez `text()` z f-stringiem (SR-7). Bandit sprawdza to w CI.

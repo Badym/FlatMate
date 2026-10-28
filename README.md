@@ -64,7 +64,7 @@ Wymagania: [Docker](https://docs.docker.com/get-docker/) z Docker Compose oraz [
    uv run flask --app wsgi seed-demo --reset                    # poza Dockerem, od nowa
    ```
 
-   W środowisku produkcyjnym polecenie odmawia działania.
+   Potem zaloguj się na http://localhost:8000/login, np. jako `ola@flatmate.example` (admin mieszkania demo). W środowisku produkcyjnym polecenie odmawia działania.
 
 5. Testy:
 

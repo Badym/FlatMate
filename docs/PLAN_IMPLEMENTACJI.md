@@ -41,6 +41,10 @@ Oznaczenia: **FR-x** to wymaganie funkcjonalne, **SR-x** to wymaganie bezpiecze�
 | D-24 | Jeden admin na mieszkanie | indeks częściowy `UNIQUE (flat_id) WHERE role = 'admin'` w bazie | niezmiennik pilnuje baza; przekazanie roli w etapie 5 najpierw degraduje starego admina, potem awansuje nowego (w jednej transakcji) |
 | D-25 | Typy zadań | 7 typów globalnych (`flat_id = NULL`) tworzy pierwsza migracja; mieszkanie może dodać własne | typy istnieją także na produkcji, nie tylko po `seed-demo` |
 | D-26 | Baza w testach | wyłącznie PostgreSQL (osobna, ulotna baza `db-test`), bez SQLite | testy sprawdzają tę samą bazę, która działa na produkcji; brak obejść dla innego silnika w kodzie aplikacji |
+| D-27 | Weryfikacja e-maila i reset hasła | poza zakresem projektu; brak serwera pocztowego. Ryzyko szczątkowe: konto można założyć na cudzy adres, a zapomniane hasło resetuje tylko administrator bazy | wymagania (FR-1, SR-1–SR-3) tego nie przewidują |
+| D-28 | Ciasteczko sesji w produkcji | nazwa `__Host-flatmate` | prefiks `__Host-` wymusza w przeglądarce HTTPS, brak domeny i ścieżkę `/`, więc ciasteczka nie da się podmienić z subdomeny |
+| D-29 | Awatary | pliki statyczne `frontend/static/uploads/avatars/` z losową 128-bitową nazwą, w Dockerze osobny wolumen; każdy obraz dekodowany i zapisywany od nowa (PNG/JPEG, 256×256, bez metadanych) | prosto i bez osobnej trasy; nazwa nie do zgadnięcia, a treść pliku zawsze pochodzi z Pillow |
+| D-30 | Adresy kont demo i testów | demo: `@flatmate.example`, testy: `@example.com` | domeny zarezerwowane (RFC 2606); `.test` odpada, bo email-validator odrzuca ją jako domenę specjalnego użytku |
 
 ---
 
@@ -78,17 +82,19 @@ FlatMate/
 │   │   ├── auth_controller.py   *  /login, /register, /logout
 │   │   ├── ui_controller.py     *  /_ui/ – biblioteka komponentów (tylko dev)
 │   │   ├── error_controller.py  *  strony błędów 400–500
-│   │   ├── profile_controller.py   etap 4
-│   │   ├── flats_controller.py     etap 5 (mieszkania, członkowie, zaproszenia)
+│   │   ├── profile_controller.py *  /profile: dane i kolor, hasło, awatar
+│   │   ├── flats_controller.py  *  /flats: lista mieszkań; w etapie 5 tworzenie, członkowie, zaproszenia
 │   │   ├── tasks_controller.py     etapy 6–7
 │   │   └── calendar_controller.py  etap 8
 │   ├── services/                *  logika biznesowa i granice transakcji
 │   │   ├── health_service.py    * 
-│   │   ├── auth_service.py         etap 4 (hasła, limit prób, session_token)
+│   │   ├── auth_service.py      *  rejestracja, logowanie z blokadą konta, wylogowanie, zmiana hasła
+│   │   ├── profile_service.py   *  nazwa i kolor
+│   │   ├── flat_service.py      *  mieszkania użytkownika z członkami i liczbą zadań
 │   │   ├── membership.py           etap 5 (odejście/usunięcie członka, przekazanie roli)
 │   │   ├── tasks.py                etap 6 (claim/done jako warunkowe UPDATE, punkty)
 │   │   ├── recurrence.py           etap 7 (wystąpienia zadań cyklicznych)
-│   │   └── avatars.py              etap 4 (walidacja i zapis awatarów)
+│   │   └── avatar_service.py    *  walidacja (Pillow), przetwarzanie i zapis awatarów
 │   ├── repositories/            *  jedyne miejsce z zapytaniami do bazy (ORM)
 │   │   ├── base_repository.py   *  Repository (zasoby globalne), FlatScopedRepository (zawsze z flat_id, T-01)
 │   │   └── health_repository.py * 
@@ -262,12 +268,17 @@ Zasoby mieszkania pobieramy zawsze zapytaniem z `flat_id` z adresu, np. `Task.qu
 | GET/POST | `/login` | logowanie; nieudana próba zwraca **401** z formularzem | limit IP liczący tylko nieudane próby + blokada konta; ogólny komunikat (SR-2, T-03); parametr `next` przez `is_safe_next()` |
 | POST | `/logout` | wylogowanie | nowy `session_token`, `session.clear()` (T-07, D-13) |
 
+Zalogowany użytkownik wchodzący na `/login` lub `/register` trafia na `/flats`. Przed zalogowaniem sesja jest czyszczona (session fixation), sesja trwa 12 h. Konto blokuje się na 15 minut po 10 nieudanych próbach (licznik zeruje się z chwilą blokady); w czasie blokady także poprawne hasło dostaje ogólny komunikat.
+
 ### profile
 | Metoda | URL | Opis |
 | --- | --- | --- |
 | GET/POST | `/profile` | nazwa, kolor z palety (D-6) |
 | POST | `/profile/avatar` | upload awatara (SR-9, T-10) |
-| POST | `/profile/password` | zmiana hasła, wymaga starego hasła; nowy `session_token`, po czym ponowne zalogowanie bieżącej sesji |
+| POST | `/profile/avatar/delete` | usunięcie awatara |
+| POST | `/profile/password` | zmiana hasła, wymaga starego hasła i innego nowego; limit `10/hour`; nowy `session_token`, po czym ponowne zalogowanie bieżącej sesji |
+
+Strona profilu ma trzy niezależne formularze z prefiksami (`profile-`, `password-`, `avatar-`), każdy z własnym tokenem CSRF.
 
 ### flats
 | Metoda | URL | Opis | Rola |
@@ -413,7 +424,7 @@ Każdy etap to osobna gałąź i PR przechodzący przez CI. Po wspólnym etapie 
 | **1** (zrobione) | razem | README, REQUIREMENTS, diagramy, plan | zrobione |
 | **2. Szkielet + CI** (zrobione) | A | warstwy MVC, `create_app`, config z `.env`, rozszerzenia, Alembic, nagłówki bezpieczeństwa, strony błędów; frontend: motyw jasny/ciemny, strona główna, logowanie i rejestracja (formularze z walidacją), biblioteka komponentów `/_ui/`; uv; Docker (aplikacja + PostgreSQL); workflow CI (testy na PostgreSQL, Bandit, pip-audit, gitleaks, kontrola szablonów, obraz Dockera), Dependabot | aplikacja startuje w Dockerze, testy zielone |
 | **3. Fundament** (zrobione) | razem, krótko | wszystkie modele z sekcji 3 (kaskady, ograniczenia) i pierwsza migracja Alembica, `flask seed-demo`, typy domyślne, dekoratory `@flat_member_required` / `@flat_admin_required`, helpery walidacji przynależności, `audit.py`, fixture'y testowe z logowaniem przez sesję, szkielet `release_member_tasks`, aktualizacja diagramu bazy | obie ścieżki mogą pracować niezależnie |
-| **4. Auth + profil** | A | rejestracja, logowanie z limiterem i blokadą konta, `session_token`, wylogowanie, `is_safe_next`, profil z paletą kolorów, zmiana hasła, awatary | FR-1, FR-2; SR-1, 2, 3, 9 |
+| **4. Auth + profil** (zrobione) | A | rejestracja, logowanie z limiterem i blokadą konta, `session_token`, wylogowanie, `is_safe_next`, profil z paletą kolorów, zmiana hasła, awatary | FR-1, FR-2; SR-1, 2, 3, 9 |
 | **5. Mieszkania i członkowie** | A | tworzenie, pulpit, zaproszenia, prośby, akceptacja, odrzucenie, usuwanie, przekazanie roli, opuszczenie, usunięcie mieszkania, `remove_member` | FR-3, 4, 5; SR-4, 8; testy IDOR i eskalacji |
 | **6. Zadania** | B | CRUD zadań jednorazowych, typy, pula, „Biorę”, przypisanie, wykonanie (warunkowe UPDATE), punkty, walidacja ID z formularzy | FR-6, FR-8 |
 | **7. Zadania cykliczne** | B | `services/recurrence.py`, szablony i wystąpienia, tryby fixed / rotation / pool, `rotation_member`, implementacja `release_member_tasks` | FR-7, testy rotacji |
@@ -484,3 +495,4 @@ uv run flask --app wsgi db migrate -m "opis zmiany"             # nowa migracja 
 - **v5 (2026-10-23):** porządek w backendzie: pakiet `app/` → `backend/`, konfiguracja, rozszerzenia i stałe w `backend/core/`, migracje w `backend/migrations/`, dane makiet w `backend/demo_data.py`, `error_controller.py`; testy podzielone na `tests/backend/`, `tests/frontend/`, `tests/scripts/`; zasady warstw w `backend/README.md` (D-19).
 - **v6 (2026-10-23):** etap 3 zrobiony: modele, pierwsza migracja z typami globalnymi, job CI dla migracji, hasła i tokeny, ładowanie sesji po `session_token`, repozytoria, dekoratory dostępu, dziennik zdarzeń bezpieczeństwa, `release_member_tasks`, `flask seed-demo`, diagram Mermaid; decyzje D-21–D-25.
 - **v7 (2026-10-23):** testy wyłącznie na PostgreSQL (D-26): baza `db-test` dostępna lokalnie, usunięte obejścia dla SQLite z kodu i migracji.
+- **v8 (2026-10-23):** etap 4 zrobiony: rejestracja, logowanie z limitem na IP i blokadą konta, wylogowanie z rotacją tokenu, bezpieczne `next`, profil (nazwa, kolor, hasło, awatar), lista mieszkań, menu użytkownika; decyzje D-27–D-30.
