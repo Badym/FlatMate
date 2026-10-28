@@ -45,15 +45,15 @@ def task_type(app_ctx) -> TaskType:
 
 class TestUser:
     def test_email_is_normalized(self, make_user) -> None:
-        user = make_user(email="  Ola.Nowak@Example.TEST ")
+        user = make_user(email="  Ola.Nowak@Example.COM ")
 
-        assert user.email == "ola.nowak@example.test"
+        assert user.email == "ola.nowak@example.com"
 
     def test_email_is_unique_regardless_of_case(self, make_user) -> None:
-        make_user(email="ola@example.test")
+        make_user(email="ola@example.com")
 
         with pytest.raises(IntegrityError):
-            make_user(email="OLA@example.test")
+            make_user(email="OLA@example.com")
         db.session.rollback()
 
     def test_session_token_is_generated_and_used_as_login_id(self, make_user) -> None:

@@ -57,7 +57,7 @@ Wymagania: [Docker](https://docs.docker.com/get-docker/) z Docker Compose oraz [
 
    W tym trybie pod http://localhost:8000/_ui/ jest biblioteka komponentów interfejsu.
 
-4. Dane demonstracyjne: 3 konta `@flatmate.test`, mieszkanie i zadania. Hasło do kont to wartość `DEMO_PASSWORD` z `.env`:
+4. Dane demonstracyjne: 3 konta `@flatmate.example`, mieszkanie i zadania. Hasło do kont to wartość `DEMO_PASSWORD` z `.env`:
 
    ```bash
    docker compose exec web flask --app wsgi seed-demo           # w działającym kontenerze

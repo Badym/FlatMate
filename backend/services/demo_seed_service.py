@@ -22,8 +22,9 @@ from backend.models.types import utcnow
 from backend.repositories import FlatRepository, TaskTypeRepository, UserRepository
 from backend.security.passwords import hash_password
 
-# Domena .test jest zarezerwowana (RFC 2606), więc adresy nigdy nie trafią do prawdziwej skrzynki.
-DEMO_EMAIL_DOMAIN = "flatmate.test"
+# Domena .example jest zarezerwowana (RFC 2606), więc adresy nigdy nie trafią do prawdziwej skrzynki.
+# Nie .test: email-validator odrzuca ją jako domenę specjalnego użytku, więc nie dałoby się zalogować.
+DEMO_EMAIL_DOMAIN = "flatmate.example"
 DEMO_FLAT_NAME = "Mickiewicza 12/4 (demo)"
 
 # (nazwa, login w adresie, indeks koloru, rola)

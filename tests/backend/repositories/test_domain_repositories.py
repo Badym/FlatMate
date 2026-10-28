@@ -18,10 +18,10 @@ from backend.repositories import (
 
 class TestUserRepository:
     def test_get_by_email_ignores_case_and_spaces(self, make_user) -> None:
-        user = make_user(email="ola@example.test")
+        user = make_user(email="ola@example.com")
 
-        assert UserRepository().get_by_email("  OLA@Example.test ") == user
-        assert UserRepository().get_by_email("ktos@example.test") is None
+        assert UserRepository().get_by_email("  OLA@Example.com ") == user
+        assert UserRepository().get_by_email("ktos@example.com") is None
 
     def test_get_by_session_token(self, make_user) -> None:
         user = make_user()

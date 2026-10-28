@@ -104,7 +104,7 @@ def make_user(app_ctx: Flask) -> Callable[..., User]:
 
     def factory(**fields: Any) -> User:
         number = next(counter)
-        fields.setdefault("email", f"osoba{number}@example.test")
+        fields.setdefault("email", f"osoba{number}@example.com")
         fields.setdefault("display_name", f"Osoba {number}")
         fields.setdefault("password_hash", _test_password_hash())
         user = User(**fields)

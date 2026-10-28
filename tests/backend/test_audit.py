@@ -25,7 +25,7 @@ def test_event_outside_request(app_ctx, caplog) -> None:
 def test_event_in_request_has_ip_and_path(app: Flask, caplog) -> None:
     with app.test_request_context("/login", method="POST", environ_base={"REMOTE_ADDR": "203.0.113.7"}):
         with caplog.at_level(logging.INFO, logger="flatmate.security"):
-            audit_event("login_failed", email_domain="example.test")
+            audit_event("login_failed", email_domain="example.com")
 
     event = _last_event(caplog)
     assert event["ip"] == "203.0.113.7"

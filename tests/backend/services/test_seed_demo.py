@@ -50,7 +50,7 @@ def test_creates_demo_accounts_flat_and_tasks(demo_app, run) -> None:
     result = run()
 
     assert result.exit_code == 0, result.output
-    assert "ola@flatmate.test" in result.output
+    assert "ola@flatmate.example" in result.output
     assert DEMO_PASSWORD not in result.output
     with demo_app.app_context():
         assert _count(User) == len(DEMO_USERS)
