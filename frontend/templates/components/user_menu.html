@@ -1,0 +1,30 @@
+{#-
+  Menu zalogowanego użytkownika w nawigacji: awatar, nazwa, linki i wylogowanie (POST z CSRF).
+  Style: css/components/user-menu.css. Rozwijanie: Bootstrap dropdown.
+-#}
+{% from "components/avatar.html" import avatar %}
+
+{% macro user_menu(user) -%}
+<div class="dropdown">
+  <button class="btn btn-ghost fm-user-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu konta: {{ user.display_name }}">
+    {{ avatar(user, "sm") }}
+    <span class="d-none d-md-inline">{{ user.display_name }}</span>
+    <i class="bi bi-chevron-down small" aria-hidden="true"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end fm-dropdown">
+    <li class="fm-dropdown-header">
+      <div class="fw-semibold text-truncate">{{ user.display_name }}</div>
+      <div class="small text-body-secondary text-truncate">{{ user.email }}</div>
+    </li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="{{ url_for('flats.index') }}"><i class="bi bi-houses" aria-hidden="true"></i>Moje mieszkania</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Wyloguj się</button>
+      </form>
+    </li>
+  </ul>
+</div>
+{%- endmacro %}

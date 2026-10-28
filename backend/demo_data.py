@@ -11,10 +11,10 @@ from __future__ import annotations
 from typing import Any
 
 MEMBERS: list[dict[str, Any]] = [
-    {"name": "Ola Nowak", "initials": "ON", "color": 0, "points": 64, "role": "admin"},
-    {"name": "Kuba Wiśniewski", "initials": "KW", "color": 9, "points": 51, "role": "member"},
-    {"name": "Marta Zając", "initials": "MZ", "color": 3, "points": 38, "role": "member"},
-    {"name": "Piotr Lis", "initials": "PL", "color": 6, "points": 22, "role": "member"},
+    {"display_name": "Ola Nowak", "initials": "ON", "color_index": 0, "points": 64, "role": "admin"},
+    {"display_name": "Kuba Wiśniewski", "initials": "KW", "color_index": 9, "points": 51, "role": "member"},
+    {"display_name": "Marta Zając", "initials": "MZ", "color_index": 3, "points": 38, "role": "member"},
+    {"display_name": "Piotr Lis", "initials": "PL", "color_index": 6, "points": 22, "role": "member"},
 ]
 
 TASKS: list[dict[str, Any]] = [

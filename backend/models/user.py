@@ -49,6 +49,15 @@ class User(UserMixin, TimestampMixin, Base):
     def _normalize_email(self, _key: str, email: str) -> str:
         return normalize_email(email)
 
+    @property
+    def initials(self) -> str:
+        """Dwie litery do awatara bez zdjęcia: inicjały imienia i nazwiska albo początek nazwy."""
+        words = self.display_name.split()
+        if not words:
+            return "?"
+        second = words[1][0] if len(words) > 1 else words[0][1:2]
+        return (words[0][0] + second).upper()
+
     def get_id(self) -> str:
         """Flask-Login zapisuje w sesji token, a nie ID: zmiana tokenu unieważnia sesje (D-13)."""
         return self.session_token

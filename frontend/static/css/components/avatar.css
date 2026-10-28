@@ -28,6 +28,18 @@
   font-size: 1rem;
 }
 
+.fm-avatar-xl {
+  width: 4.5rem;
+  height: 4.5rem;
+  font-size: 1.4rem;
+}
+
+/* Awatar ze zdjęciem (img zamiast inicjałów) */
+.fm-avatar-img {
+  object-fit: cover;
+  background: var(--fm-surface-2);
+}
+
 .fm-avatar-empty {
   background: transparent;
   color: var(--fm-muted);
