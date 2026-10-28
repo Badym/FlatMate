@@ -12,7 +12,6 @@
     <div>
       <span class="fm-eyebrow">Cześć, {{ current_user.display_name }}</span>
       <h1 class="fm-page-title">Moje mieszkania</h1>
-      <p class="text-body-secondary mb-0">Mieszkania, w których jesteś członkiem. Każde widzi wyłącznie swoje dane.</p>
     </div>
   </header>
 
@@ -41,7 +40,7 @@
     {% endfor %}
   </div>
   {% else %}
-  {{ empty_state("bi-house-add", "Nie należysz jeszcze do żadnego mieszkania", "Wkrótce utworzysz tu własne mieszkanie albo dołączysz do istniejącego przez link zaproszenia od admina.") }}
+  {{ empty_state("bi-house-add", "Nie należysz jeszcze do żadnego mieszkania", "Tworzenie mieszkań i zaproszenia pojawią się wkrótce.") }}
   {% endif %}
 </div>
 {% endblock %}

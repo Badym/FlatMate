@@ -47,10 +47,12 @@ def _initial_migration():
 
 
 def test_migration_default_task_types_match_model() -> None:
-    assert list(_initial_migration().DEFAULT_TASK_TYPES) == [dict(row) for row in DEFAULT_TASK_TYPES]
+    """Nazwy i ikony typów z pierwszej migracji (punkty usunęła późniejsza migracja)."""
+    in_migration = [(row["name"], row["icon"]) for row in _initial_migration().DEFAULT_TASK_TYPES]
+
+    assert in_migration == [(row["name"], row["icon"]) for row in DEFAULT_TASK_TYPES]
 
 
-def test_migration_does_not_import_application_code() -> None:
-    path = next(Path(MIGRATIONS_DIR, "versions").glob("*_schemat_poczatkowy.py"))
-
+@pytest.mark.parametrize("path", sorted(Path(MIGRATIONS_DIR, "versions").glob("*.py")), ids=lambda p: p.name)
+def test_migrations_do_not_import_application_code(path: Path) -> None:
     assert "backend" not in path.read_text(encoding="utf-8")

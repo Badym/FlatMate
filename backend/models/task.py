@@ -5,15 +5,10 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Index, SmallInteger, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, Date, ForeignKey, Index, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.core.constants import (
-    TASK_DESCRIPTION_MAX_LENGTH,
-    TASK_POINTS_MAX,
-    TASK_POINTS_MIN,
-    TASK_TITLE_MAX_LENGTH,
-)
+from backend.core.constants import TASK_DESCRIPTION_MAX_LENGTH, TASK_TITLE_MAX_LENGTH
 from backend.models.base import Base, TimestampMixin
 from backend.models.enums import AssignmentMode, Recurrence, TaskStatus
 from backend.models.types import UTCDateTime, enum_column
@@ -36,7 +31,6 @@ class Task(TimestampMixin, Base):
     __tablename__ = "tasks"
     __table_args__ = (
         UniqueConstraint("parent_task_id", "occurrence_index"),
-        CheckConstraint(f"points BETWEEN {TASK_POINTS_MIN} AND {TASK_POINTS_MAX}", name="points_range"),
         CheckConstraint(
             f"length(description) <= {TASK_DESCRIPTION_MAX_LENGTH}", name="description_length"
         ),
@@ -57,7 +51,7 @@ class Task(TimestampMixin, Base):
         ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
     created_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
-    # Usunięcie serii zostawia wykonane wystąpienia jako historię punktów.
+    # Usunięcie serii zostawia wykonane wystąpienia jako historię zadań.
     parent_task_id: Mapped[int | None] = mapped_column(
         ForeignKey("tasks.id", ondelete="SET NULL"), index=True
     )
@@ -66,7 +60,6 @@ class Task(TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(TASK_TITLE_MAX_LENGTH))
     description: Mapped[str] = mapped_column(Text, default="")
     due_date: Mapped[date] = mapped_column(Date)
-    points: Mapped[int] = mapped_column(SmallInteger, default=10)
     status: Mapped[TaskStatus] = mapped_column(enum_column(TaskStatus, "task_status"), default=TaskStatus.OPEN)
     done_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     done_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))

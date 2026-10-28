@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import stat
 from io import BytesIO
 
 import pytest
@@ -100,6 +102,12 @@ class TestAvatarService:
 
         assert user.avatar_filename is None
         assert not (avatar_dir / filename).exists()
+
+    @pytest.mark.skipif(os.name == "nt", reason="Windows nie obsługuje uprawnień POSIX")
+    def test_saved_file_is_readable_by_others(self, make_user, avatar_dir, image_bytes) -> None:
+        filename = AvatarService(avatar_dir).save(make_user(), BytesIO(image_bytes("PNG")))
+
+        assert stat.S_IMODE((avatar_dir / filename).stat().st_mode) == 0o644
 
     def test_delete_without_avatar_is_a_no_op(self, make_user, avatar_dir) -> None:
         AvatarService(avatar_dir).delete(make_user())

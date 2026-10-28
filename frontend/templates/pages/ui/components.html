@@ -39,10 +39,9 @@
       <section class="fm-ui-section" id="pulpit">
         <h2 class="fm-ui-title">Pulpit mieszkania</h2>
         <div class="row g-3 mb-4">
-          <div class="col-6 col-xl-3">{{ stat_card("bi-list-check", "Moje zadania", 3) }}</div>
-          <div class="col-6 col-xl-3">{{ stat_card("bi-inboxes", "Do wzięcia", 2, "fm-chip-violet") }}</div>
-          <div class="col-6 col-xl-3">{{ stat_card("bi-lightning-charge", "Moje punkty", 64, "fm-chip-amber") }}</div>
-          <div class="col-6 col-xl-3">{{ stat_card("bi-exclamation-circle", "Zaległe", 1, "fm-chip-rose") }}</div>
+          <div class="col-sm-4">{{ stat_card("bi-list-check", "Moje zadania", 3) }}</div>
+          <div class="col-sm-4">{{ stat_card("bi-inboxes", "Do wzięcia", 2, "fm-chip-violet") }}</div>
+          <div class="col-sm-4">{{ stat_card("bi-exclamation-circle", "Zaległe", 1, "fm-chip-rose") }}</div>
         </div>
 
         <div class="row g-4">
@@ -61,23 +60,14 @@
           </div>
           <div class="col-xl-5">
             <div class="fm-card p-3 p-md-4 h-100">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h3 class="h6 fw-bold mb-0">Ranking punktów</h3>
-                {{ badge("Ten miesiąc") }}
-              </div>
-              {% set ranked = members|sort(attribute="points", reverse=True) %}
-              {% set max_points = ranked[0].points %}
-              {% for member in ranked %}
-              <div class="fm-rank">
-                <span class="fm-rank-place">{{ loop.index }}</span>
+              <h3 class="h6 fw-bold mb-2">Członkowie</h3>
+              {% for member in members %}
+              <div class="fm-member-row">
                 {{ avatar(member) }}
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between">
-                    <span class="fw-semibold">{{ member.display_name }}{% if member.role == "admin" %} {{ badge("admin", variant="primary") }}{% endif %}</span>
-                    <span class="fw-bold">{{ member.points }}</span>
-                  </div>
-                  <div class="fm-progress"><span class="u-color-{{ member.color_index }} fm-w-{{ ((member.points * 20 / max_points)|round(0, 'floor')|int) * 5 }}"></span></div>
-                </div>
+                <span class="fw-semibold flex-grow-1">{{ member.display_name }}</span>
+                {%- if member.role == "admin" %}
+                {{ badge("admin", "bi-star-fill", "primary") }}
+                {%- endif %}
               </div>
               {% endfor %}
             </div>
@@ -192,11 +182,6 @@
               <input class="form-control is-invalid" id="demo-invalid" type="text" value="31.02.2026" aria-invalid="true" aria-describedby="demo-invalid-feedback">
               <div class="invalid-feedback" id="demo-invalid-feedback"><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>Podaj poprawną datę.</div>
             </div>
-            <div class="col-md-6">
-              <label class="form-label" for="demo-points">Punkty</label>
-              <input class="form-control" id="demo-points" type="number" value="10" min="1" max="100">
-              <div class="form-text">Domyślnie z typu zadania.</div>
-            </div>
             <div class="col-12">
               <label class="form-label" for="demo-description">Opis</label>
               <textarea class="form-control" id="demo-description" rows="3" placeholder="Szczegóły, np. gdzie są środki czystości"></textarea>
@@ -218,7 +203,7 @@
       <section class="fm-ui-section" id="komunikaty">
         <h2 class="fm-ui-title">Komunikaty</h2>
         <div class="d-grid gap-2">
-          {{ flash("success", "Zadanie oznaczone jako wykonane. +15 pkt.", dismissible=False) }}
+          {{ flash("success", "Zadanie oznaczone jako wykonane.", dismissible=False) }}
           {{ flash("info", "Prośba o dołączenie czeka na akceptację admina.", dismissible=False) }}
           {{ flash("warning", "Link zaproszenia wygaśnie jutro.", dismissible=False) }}
           {{ flash("danger", "To zadanie zostało już wzięte przez inną osobę.", dismissible=False) }}

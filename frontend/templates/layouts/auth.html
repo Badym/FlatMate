@@ -1,6 +1,6 @@
 {#-
-  Układ ekranów logowania i rejestracji: panel z opisem po lewej, formularz po prawej.
-  Bloki: aside_headline, aside_text, form. Style: css/layouts/auth.css
+  Układ ekranów logowania i rejestracji: panel z hasłem przewodnim po lewej, formularz po prawej.
+  Bloki: aside_headline, form. Style: css/layouts/auth.css
 -#}
 {% extends "layouts/base.html" %}
 {% from "components/brand.html" import brand %}
@@ -16,33 +16,15 @@
 
     <div>
       <h2 class="fm-auth-headline">{% block aside_headline %}Wspólne mieszkanie bez sporów o obowiązki.{% endblock %}</h2>
-      <p class="fm-auth-sub">{% block aside_text %}Zadania cykliczne same przechodzą na kolejną osobę, a punkty pokazują, kto ile robi.{% endblock %}</p>
-
-      <div class="mt-5" aria-hidden="true">
-        <div class="fm-glass d-flex align-items-center gap-3">
-          <span class="fm-icon-chip fm-icon-chip-sm"><i class="bi bi-droplet-half"></i></span>
-          <div class="flex-grow-1">
-            <div class="fw-semibold">Sprzątanie łazienki</div>
-            <div class="fm-glass-meta"><i class="bi bi-arrow-repeat me-1"></i>Rotacja · następna: Marta</div>
-          </div>
-          <span class="fm-avatar fm-avatar-sm u-color-3">MZ</span>
+      <div class="fm-glass d-flex align-items-center gap-3 mt-5" aria-hidden="true">
+        <span class="fm-icon-chip fm-icon-chip-sm"><i class="bi bi-droplet-half"></i></span>
+        <div class="flex-grow-1">
+          <div class="fw-semibold">Sprzątanie łazienki</div>
+          <div class="fm-glass-meta"><i class="bi bi-arrow-repeat me-1"></i>Następna: Marta</div>
         </div>
-        <div class="fm-glass d-flex align-items-center gap-3">
-          <span class="fm-icon-chip fm-icon-chip-sm"><i class="bi bi-trophy"></i></span>
-          <div class="flex-grow-1">
-            <div class="fw-semibold">+15 pkt dla Oli</div>
-            <div class="fm-glass-meta">Ranking tygodnia: 1. miejsce</div>
-          </div>
-          <span class="fm-avatar fm-avatar-sm u-color-0">ON</span>
-        </div>
+        <span class="fm-avatar fm-avatar-sm u-color-3">MZ</span>
       </div>
     </div>
-
-    <ul class="fm-auth-points list-unstyled">
-      <li><i class="bi bi-check-circle-fill"></i>Każde mieszkanie widzi wyłącznie swoje dane</li>
-      <li><i class="bi bi-check-circle-fill"></i>Nowe osoby dołączają tylko po akceptacji admina</li>
-      <li><i class="bi bi-check-circle-fill"></i>Hasła przechowywane jako hash z solą</li>
-    </ul>
   </aside>
 
   <div class="fm-auth-main">
@@ -57,8 +39,6 @@
     <div class="fm-auth-form fm-fade-up">
       {% block form %}{% endblock %}
     </div>
-
-    <p class="fm-auth-footnote mb-0"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i>Formularz chroniony tokenem CSRF</p>
   </div>
 </div>
 {% endblock %}
