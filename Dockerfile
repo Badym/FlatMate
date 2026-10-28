@@ -45,6 +45,8 @@ FROM base AS runtime
 
 COPY backend ./backend
 COPY frontend ./frontend
+# Jedyny zapisywalny katalog aplikacji: awatary (w docker-compose osobny wolumen).
+RUN mkdir -p frontend/static/uploads/avatars && chown -R flatmate:flatmate frontend/static/uploads
 COPY wsgi.py ./
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 

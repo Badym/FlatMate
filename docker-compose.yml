@@ -47,6 +47,9 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    volumes:
+      # Awatary użytkowników; reszta systemu plików kontenera jest tylko do odczytu.
+      - avatars:/app/frontend/static/uploads
     cap_drop:
       - ALL
     security_opt:
@@ -79,3 +82,4 @@ services:
 
 volumes:
   pgdata:
+  avatars:

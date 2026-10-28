@@ -10,6 +10,7 @@
 .coverage
 htmlcov
 instance
+frontend/static/uploads
 docs
 *.md
 !README.md
