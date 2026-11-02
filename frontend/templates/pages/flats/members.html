@@ -1,0 +1,81 @@
+{% extends "layouts/base.html" %}
+{% from "components/avatar.html" import avatar %}
+{% from "components/badge.html" import badge %}
+
+{% block title %}Członkowie · {{ flat.name }} · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <a class="btn btn-ghost mb-3" href="{{ url_for('flats.detail', flat_id=flat.id) }}">
+    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ flat.name }}
+  </a>
+  <header class="fm-page-header">
+    <div>
+      <span class="fm-eyebrow">Zarządzanie mieszkaniem</span>
+      <h1 class="fm-page-title">Członkowie</h1>
+    </div>
+    {% if membership.is_admin %}
+    <a class="btn btn-primary" href="{{ url_for('flats.invites', flat_id=flat.id) }}">
+      <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Zaproszenia
+    </a>
+    {% endif %}
+  </header>
+
+  <section class="fm-card p-3 p-md-4">
+    <ul class="list-unstyled d-grid gap-3 mb-0">
+      {% for item in memberships %}
+      <li class="border-bottom pb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div class="d-flex align-items-center gap-3">
+            {{ avatar(item.user, "sm") }}
+            <div>
+              <div class="fw-semibold">{{ item.user.display_name }}</div>
+              <div class="small text-body-secondary">{{ item.user.email }}</div>
+            </div>
+            {% if item.status.value == "active" and item.is_admin %}
+              {{ badge("admin", "bi-star-fill", "primary") }}
+            {% elif item.status.value == "active" %}
+              {{ badge("członek", "bi-person") }}
+            {% elif item.status.value == "pending" %}
+              {{ badge("oczekuje", "bi-hourglass-split", "warning") }}
+            {% else %}
+              {{ badge("odrzucono", "bi-x-circle", "neutral") }}
+            {% endif %}
+          </div>
+          {% if membership.is_admin and not item.is_admin %}
+          <div class="d-flex flex-wrap gap-2">
+            {% if item.status.value == "pending" %}
+            <form method="post" action="{{ url_for('flats.approve_member', flat_id=flat.id, membership_id=item.id) }}">
+              {{ action_form.csrf_token }}
+              <button class="btn btn-sm btn-primary" type="submit">Akceptuj</button>
+            </form>
+            <form method="post" action="{{ url_for('flats.reject_member', flat_id=flat.id, membership_id=item.id) }}">
+              {{ action_form.csrf_token }}
+              <button class="btn btn-sm btn-outline-secondary" type="submit">Odrzuć</button>
+            </form>
+            {% elif item.status.value == "active" %}
+            <form method="post" action="{{ url_for('flats.make_admin', flat_id=flat.id, membership_id=item.id) }}">
+              {{ action_form.csrf_token }}
+              <button class="btn btn-sm btn-neutral" type="submit">Przekaż admina</button>
+            </form>
+            <form method="post" action="{{ url_for('flats.remove_member', flat_id=flat.id, membership_id=item.id) }}">
+              {{ action_form.csrf_token }}
+              <button class="btn btn-sm btn-outline-danger" type="submit">Usuń</button>
+            </form>
+            {% elif item.status.value == "rejected" %}
+            <form method="post" action="{{ url_for('flats.remove_member', flat_id=flat.id, membership_id=item.id) }}">
+              {{ action_form.csrf_token }}
+              <button class="btn btn-sm btn-outline-danger" type="submit">Usuń odrzucenie</button>
+            </form>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </li>
+      {% else %}
+      <li class="text-body-secondary">Brak członków.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

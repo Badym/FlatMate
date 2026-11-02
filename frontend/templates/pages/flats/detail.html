@@ -1,0 +1,59 @@
+{% extends "layouts/base.html" %}
+{% from "components/avatar.html" import avatar %}
+{% from "components/badge.html" import badge %}
+
+{% block title %}{{ flat.name }} · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <header class="fm-page-header">
+    <div>
+      <span class="fm-eyebrow">Mieszkanie</span>
+      <h1 class="fm-page-title">{{ flat.name }}</h1>
+      <p class="text-body-secondary mb-0">{{ members|selectattr("status", "equalto", "active")|list|length }} aktywnych członków</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-neutral" href="{{ url_for('flats.members', flat_id=flat.id) }}">
+        <i class="bi bi-people me-1" aria-hidden="true"></i>Członkowie
+      </a>
+      {% if membership.is_admin %}
+      <a class="btn btn-primary" href="{{ url_for('flats.invites', flat_id=flat.id) }}">
+        <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Zaproszenia
+      </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <section class="fm-card p-4 p-md-5 mb-4" aria-labelledby="flat-members-title">
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+      <h2 class="h4 fw-bold mb-0" id="flat-members-title">Współlokatorzy</h2>
+      <a href="{{ url_for('flats.members', flat_id=flat.id) }}">Zarządzaj</a>
+    </div>
+    <ul class="list-unstyled d-grid gap-3 mb-0">
+      {% for item in members if item.status.value == "active" %}
+      <li class="d-flex align-items-center gap-3">
+        {{ avatar(item.user, "sm") }}
+        <span class="fw-semibold">{{ item.user.display_name }}</span>
+        {% if item.is_admin %}{{ badge("admin", "bi-star-fill", "primary") }}{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="fm-card p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <h2 class="h5 fw-bold">Opuść mieszkanie</h2>
+      <p class="text-body-secondary mb-0">
+        {% if membership.is_admin %}Najpierw przekaż rolę administratora innej osobie.{% else %}Twoje otwarte zadania wrócą do puli.{% endif %}
+      </p>
+    </div>
+    <form method="post" action="{{ url_for('flats.leave', flat_id=flat.id) }}">
+      {{ leave_form.csrf_token }}
+      <button class="btn btn-outline-danger" type="submit">Opuść</button>
+    </form>
+    {% if membership.is_admin %}
+    <a class="btn btn-ghost text-danger" href="{{ url_for('flats.delete', flat_id=flat.id) }}">Usuń mieszkanie</a>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

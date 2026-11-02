@@ -199,11 +199,16 @@ Po zalogowaniu zobaczysz stronę **Moje mieszkania** z mieszkaniem demo.
 
 ### 5.3. Co możesz teraz zrobić
 
+- **Utworzenie mieszkania:** na stronie **Moje mieszkania** kliknij **Utwórz mieszkanie**, wpisz nazwę i zapisz. Automatycznie zostaniesz administratorem.
+- **Zaproszenie współlokatora:** wejdź do mieszkania, wybierz **Zaproszenia** i utwórz link. Skopiuj go od razu — token jest wyświetlany tylko po utworzeniu. Link działa 7 dni; możesz go unieważnić na stronie zaproszeń.
+- **Dołączenie do mieszkania:** zalogowany współlokator otwiera link i wysyła prośbę. Administrator akceptuje ją na stronie **Członkowie**. Samo otwarcie linku nie daje dostępu do danych.
+- **Zarządzanie członkami:** administrator może zaakceptować lub odrzucić prośbę, usunąć aktywnego członka i przekazać rolę admina. Odrzuconą prośbę można usunąć, aby ta osoba mogła poprosić ponownie.
+- **Opuszczenie mieszkania:** członek może opuścić mieszkanie; jego otwarte zadania wracają do puli. Administrator najpierw przekazuje rolę innej osobie. Jeśli jest ostatnim aktywnym członkiem, może usunąć mieszkanie po wpisaniu jego nazwy.
 - **Profil:** kliknij swój awatar z nazwą w prawym górnym rogu i wybierz **Profil**. Tam zmienisz nazwę, kolor, zdjęcie (PNG lub JPEG, do 2 MB) i hasło.
 - **Wylogowanie:** w tym samym menu wybierz **Wyloguj się**.
 - **Własne konto:** po wylogowaniu kliknij **Załóż konto** i wypełnij formularz: nazwę, e-mail i dwa razy hasło (co najmniej 12 znaków).
 
-Na tym etapie projektu działają konta, profil i lista mieszkań. Tworzenie mieszkań, zaproszenia, zadania i kalendarz dochodzą w kolejnych etapach.
+Tworzenie i zarządzanie mieszkaniami oraz zaproszenia działają. Obsługa zadań i kalendarz są jeszcze w kolejnych etapach projektu; zadania widoczne na koncie demo służą na razie tylko do demonstracji listy.
 
 ---
 

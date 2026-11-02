@@ -1,0 +1,28 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Dołącz do mieszkania · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5 fm-form-page">
+  <div class="fm-card p-4 p-md-5">
+    <span class="fm-eyebrow">Zaproszenie do FlatMate</span>
+    <h1 class="h2 fw-bold mt-2">{{ flat.name }}</h1>
+    {% if message %}
+    <div class="alert alert-info mt-4" role="status">{{ message }}</div>
+    {% elif membership and membership.status.value == "pending" %}
+    <div class="alert alert-info mt-4" role="status">Twoja prośba oczekuje na akceptację administratora.</div>
+    {% elif membership and membership.status.value == "active" %}
+    <div class="alert alert-success mt-4" role="status">Jesteś już członkiem tego mieszkania.</div>
+    {% elif membership and membership.status.value == "rejected" %}
+    <div class="alert alert-warning mt-4" role="status">Twoja poprzednia prośba została odrzucona. Skontaktuj się z administratorem.</div>
+    {% else %}
+    <p class="text-body-secondary">Wyślij prośbę o dołączenie. Dostęp uzyskasz po akceptacji administratora.</p>
+    <form method="post">
+      {{ form.csrf_token }}
+      <button class="btn btn-primary" type="submit">Poproś o dołączenie</button>
+    </form>
+    {% endif %}
+    <a class="btn btn-ghost mt-3" href="{{ url_for('flats.index') }}">Moje mieszkania</a>
+  </div>
+</div>
+{% endblock %}

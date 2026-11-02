@@ -50,6 +50,16 @@ class MembershipRepository(FlatScopedRepository[Membership]):
         )
         return list(self._session.scalars(statement))
 
+    def list_for_flat(self, flat_id: int) -> list[Membership]:
+        """Członkostwa wszystkich statusów do panelu admina."""
+        statement = (
+            self._select()
+            .options(joinedload(Membership.user))
+            .where(Membership.flat_id == flat_id)
+            .order_by(Membership.status, Membership.role, Membership.user_id)
+        )
+        return list(self._session.scalars(statement))
+
     def get_admin(self, flat_id: int) -> Membership | None:
         statement = self._select().where(
             Membership.flat_id == flat_id,

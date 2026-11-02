@@ -1,0 +1,22 @@
+{% extends "layouts/base.html" %}
+{% from "components/form_field.html" import form_field %}
+
+{% block title %}Nowe mieszkanie · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5 fm-form-page">
+  <a class="btn btn-ghost mb-4" href="{{ url_for('flats.index') }}">
+    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Moje mieszkania
+  </a>
+  <div class="fm-card p-4 p-md-5">
+    <span class="fm-eyebrow">Zacznij tutaj</span>
+    <h1 class="h2 fw-bold mt-2">Utwórz mieszkanie</h1>
+    <p class="text-body-secondary">Po utworzeniu zostaniesz jego administratorem i będziesz móc zaprosić współlokatorów.</p>
+    <form method="post">
+      {{ form.csrf_token }}
+      {{ form_field(form.name, icon="bi-house-door", attrs={"maxlength": 80, "autofocus": true}) }}
+      {{ form.submit(class_="btn btn-primary") }}
+    </form>
+  </div>
+</div>
+{% endblock %}

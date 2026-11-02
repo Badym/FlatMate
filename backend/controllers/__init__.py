@@ -24,6 +24,7 @@ def register_controllers(app: Flask) -> None:
     app.register_blueprint(main_controller.bp)
     app.register_blueprint(auth_controller.bp)
     app.register_blueprint(flats_controller.bp)
+    app.register_blueprint(flats_controller.join_bp)
     app.register_blueprint(profile_controller.bp)
     if app.config["ENABLE_UI_PREVIEW"]:
         app.register_blueprint(ui_controller.bp)

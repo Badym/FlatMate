@@ -13,6 +13,9 @@
       <span class="fm-eyebrow">Cześć, {{ current_user.display_name }}</span>
       <h1 class="fm-page-title">Moje mieszkania</h1>
     </div>
+    <a class="btn btn-primary" href="{{ url_for('flats.create') }}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Utwórz mieszkanie
+    </a>
   </header>
 
   {% if flats %}
@@ -35,12 +38,15 @@
             <i class="bi bi-list-check me-1" aria-hidden="true"></i>{{ summary.open_tasks }} {{ summary.open_tasks|plural("zadanie", "zadania", "zadań") }} do zrobienia
           </span>
         </div>
+        <a class="btn btn-neutral mt-3" href="{{ url_for('flats.detail', flat_id=summary.flat.id) }}">Otwórz mieszkanie</a>
       </article>
     </div>
     {% endfor %}
   </div>
   {% else %}
-  {{ empty_state("bi-house-add", "Nie należysz jeszcze do żadnego mieszkania", "Tworzenie mieszkań i zaproszenia pojawią się wkrótce.") }}
+  {% call empty_state("bi-house-add", "Nie należysz jeszcze do żadnego mieszkania", "Utwórz mieszkanie albo poproś o zaproszenie współlokatora.") %}
+  <a class="btn btn-primary" href="{{ url_for('flats.create') }}">Utwórz mieszkanie</a>
+  {% endcall %}
   {% endif %}
 </div>
 {% endblock %}
