@@ -59,7 +59,7 @@ git switch develop
 .\start.ps1
 ```
 
-Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z losowymi sekretami (nie jest on śledzony przez Git), a potem buduje i uruchamia aplikację wraz z PostgreSQL. Przy kolejnych uruchomieniach zachowuje istniejący `.env`. Migracje bazy wykonują się automatycznie. Domyślny adres aplikacji to http://localhost:8000; jeśli zmieniono `WEB_PORT`, użyj ustawionego portu.
+Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z losowym kluczem aplikacji oraz hasłami bazy i kont demo (plik jest ignorowany przez Git). Przy kolejnych uruchomieniach zachowuje te hasła i synchronizuje hasło roli PostgreSQL z `.env`, bez usuwania danych. Migracje bazy wykonują się automatycznie. Domyślny adres aplikacji to http://localhost:8000; jeśli zmieniono `WEB_PORT`, użyj ustawionego portu.
 
 ### Sprawdzenie stanu
 
@@ -85,7 +85,7 @@ Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z
 
 ### Dane demo i tryb deweloperski
 
-Dane demonstracyjne można utworzyć poleceniem `docker compose exec web flask --app wsgi seed-demo`. Wcześniej ustaw w `.env` wartość `DEMO_PASSWORD` (co najmniej 12 znaków) i wczytaj ją do kontenera przez `docker compose up -d web`; zaloguj się np. jako `ola@flatmate.example`. Polecenie seedowania jest wyłączone w środowisku produkcyjnym.
+Dane demonstracyjne można utworzyć poleceniem `docker compose exec web flask --app wsgi seed-demo`. Wygenerowane hasło znajduje się w `.env` w polu `DEMO_PASSWORD`; zaloguj się np. jako `ola@flatmate.example`. Polecenie seedowania jest wyłączone w środowisku produkcyjnym.
 
 Tryb deweloperski z automatycznym przeładowaniem kodu i biblioteką komponentów pod `/_ui/`:
 

@@ -101,13 +101,13 @@ Uruchom PowerShell w katalogu repozytorium i wpisz:
 .\start.ps1
 ```
 
-Przy pierwszym uruchomieniu skrypt kopiuje ustawienia z `.env.example`, generuje bezpieczne losowe wartości `SECRET_KEY` i `POSTGRES_PASSWORD`, zapisuje je w ignorowanym przez Git pliku `.env`, a następnie uruchamia aplikację i bazę przez Docker Compose. Niczego nie musisz ręcznie uzupełniać. Przy kolejnych startach istniejący `.env` pozostaje bez zmian.
+Przy pierwszym uruchomieniu skrypt kopiuje ustawienia z `.env.example`, generuje bezpieczne losowe wartości `SECRET_KEY`, `POSTGRES_PASSWORD` i `DEMO_PASSWORD`, zapisuje je w ignorowanym przez Git pliku `.env`, a następnie uruchamia aplikację i bazę przez Docker Compose. Niczego nie musisz ręcznie uzupełniać. Przy kolejnych startach skrypt zachowuje hasła z `.env` i synchronizuje hasło użytkownika PostgreSQL z ustawieniem, bez kasowania danych.
 
 Uwagi:
 
 - `APP_ENV=production` zakłada HTTPS za reverse proxy. Na własnym komputerze zostaw `development`.
-- Hasło do bazy i pozostałe dane istniejącej instalacji są zachowane w `.env` i wolumenach Dockera.
-- Jeśli chcesz utworzyć konta demo, przed uruchomieniem `seed-demo` wpisz własne `DEMO_PASSWORD` w `.env`; do samego uruchomienia aplikacji nie jest potrzebne.
+- Hasła i pozostałe dane istniejącej instalacji są zachowane w `.env` i wolumenach Dockera.
+- Losowe hasło do kont demo zapisuje się w `.env` jako `DEMO_PASSWORD`. Możesz je tam odczytać po uruchomieniu aplikacji i użyć do logowania.
 
 ---
 
@@ -119,7 +119,7 @@ Przy pierwszym uruchomieniu Docker pobiera obrazy i buduje aplikację, co zajmuj
 web-1  | [2026-10-28 18:30:00 +0000] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
 ```
 
-**Zostaw to okno otwarte**, bo zamknięcie go zatrzymuje aplikację.
+Skrypt uruchamia kontenery w tle, więc możesz zamknąć okno PowerShella. Logi aplikacji zobaczysz poleceniem `docker compose logs -f web`.
 
 Otwórz w przeglądarce **http://localhost:8000**. Endpoint liveness jest dostępny bez logowania:
 
@@ -143,19 +143,13 @@ Invoke-RestMethod http://localhost:8000/ready
 
 ### 4.1. Utwórz dane demonstracyjne
 
-Opcjonalnie: aby utworzyć konta demo, najpierw w drugim oknie PowerShella otwórz `.env`:
+Opcjonalnie: jeśli chcesz poznać wygenerowane hasło do kont demo, otwórz `.env`:
 
 ```powershell
 notepad .env
 ```
 
-Wpisz własne hasło (co najmniej 12 znaków) przy `DEMO_PASSWORD=`, zapisz plik, a potem wczytaj ustawienie do kontenera:
-
-```powershell
-docker compose up -d web
-```
-
-Teraz utwórz konta demo:
+Następnie utwórz konta demo:
 
 ```powershell
 cd $HOME\Documents\FlatMate
@@ -181,7 +175,7 @@ Hasło do wszystkich trzech kont to wartość `DEMO_PASSWORD` z twojego pliku `.
 
 Po zalogowaniu zobaczysz stronę **Moje mieszkania** z mieszkaniem demo.
 
-### 4.3. Co możesz teraz zrobić
+### 4.3. Obecnie zaimplementowane funkcjonalności
 
 - **Utworzenie mieszkania:** na stronie **Moje mieszkania** kliknij **Utwórz mieszkanie**, wpisz nazwę i zapisz. Automatycznie zostaniesz administratorem.
 - **Zaproszenie współlokatora:** wejdź do mieszkania, wybierz **Zaproszenia** i utwórz link. Skopiuj go od razu — token jest wyświetlany tylko po utworzeniu. Link działa 7 dni; możesz go unieważnić na stronie zaproszeń.
@@ -236,8 +230,8 @@ Praca bez kontenera aplikacji (wymaga [uv](https://docs.astral.sh/uv/): `winget 
 | `error during connect` albo `Cannot connect to the Docker daemon` | Docker Desktop nie działa. Uruchom go i poczekaj na **Engine running**. |
 | `Ustaw SECRET_KEY w pliku .env` albo `Ustaw POSTGRES_PASSWORD w pliku .env` | Uruchom aplikację przez `.\start.ps1`, aby wygenerować brakujący `.env`. Jeśli plik już istnieje, sprawdź poleceniem `Get-ChildItem -Force .env*`, czy nazywa się dokładnie `.env`, a nie `.env.txt`, i czy zawiera wymagane wartości. |
 | `port is already allocated` albo `Bind for 127.0.0.1:8000 failed` | Port zajęty przez inny program. W `.env` zmień `WEB_PORT=8000` na np. `8001` (a przy błędzie z portem 5432 `POSTGRES_PORT=5432` na `5433`) i otwórz http://localhost:8001. |
-| `password authentication failed for user "flatmate"` | `POSTGRES_PASSWORD` zmieniono po pierwszym uruchomieniu. Przywróć poprzednie hasło albo usuń bazę poleceniem `docker compose down -v` (traci dane) i uruchom aplikację ponownie. |
-| `Ustaw DEMO_PASSWORD (co najmniej 12 znaków)` | Uzupełnij `DEMO_PASSWORD` w `.env`, wpisz `docker compose up -d`, żeby kontener wczytał nową wartość, i powtórz `seed-demo`. |
+| `password authentication failed for user "flatmate"` | Uruchom `.\start.ps1`. Skrypt synchronizuje hasło użytkownika PostgreSQL z `.env` bez usuwania danych. Jeśli nie może tego zrobić, sprawdź, czy `POSTGRES_USER` w `.env` odpowiada administratorowi istniejącej bazy. |
+| `Ustaw DEMO_PASSWORD (co najmniej 12 znaków)` | Ustaw niepuste `DEMO_PASSWORD` w `.env`, wpisz `docker compose up -d web`, a następnie powtórz `seed-demo`. |
 | `Dane demo już istnieją` | Konta demo już są, możesz się logować. Żeby utworzyć je od nowa, dodaj `--reset`. |
 | `service "web" is not running` przy `seed-demo` | Aplikacja nie działa. Uruchom ją (etap 4) i dopiero potem `seed-demo`. |
 | Strona http://localhost:8000 się nie otwiera | Sprawdź, czy w oknie z serwerem jest linia `Listening at`. Spróbuj adresu http://127.0.0.1:8000. |
