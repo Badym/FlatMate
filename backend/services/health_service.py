@@ -1,4 +1,4 @@
-"""Stan aplikacji dla healthchecka Dockera i monitoringu."""
+"""Gotowość aplikacji na podstawie dostępności bazy danych."""
 
 from __future__ import annotations
 

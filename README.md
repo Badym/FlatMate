@@ -39,50 +39,66 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 
 ## Uruchomienie
 
-Instrukcja krok po kroku dla komputera bez zainstalowanych narzędzi: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
+Wymagania: Windows 10/11, Git, [Docker Desktop](https://docs.docker.com/get-docker/) z uruchomionym Docker Engine oraz PowerShell. Python, PostgreSQL ani `uv` nie są potrzebne do uruchomienia aplikacji.
 
-Wymagania: [Docker](https://docs.docker.com/get-docker/) z Docker Compose oraz [uv](https://docs.astral.sh/uv/) (do pracy poza kontenerami).
+Jeśli Git i Docker Desktop nie są zainstalowane, możesz zainstalować je przez `winget`:
 
-1. Skopiuj `.env.example` do `.env` i uzupełnij `SECRET_KEY` oraz `POSTGRES_PASSWORD`. Wartości wygenerujesz poleceniem `uv run python -c "import secrets; print(secrets.token_hex(32))"`.
-2. Uruchom aplikację z bazą:
+```powershell
+winget install --id Git.Git -e
+winget install --id Docker.DockerDesktop -e
+```
 
-   ```bash
-   docker compose up --build
-   ```
+Po instalacji uruchom Docker Desktop i poczekaj, aż Docker Engine będzie działał.
 
-   Aplikacja: http://localhost:8000. Przy starcie kontener wykonuje migracje bazy, a stan aplikacji widać pod `/health`.
+Sklonuj repozytorium, przejdź do jego katalogu i uruchom aplikację:
 
-3. Tryb deweloperski z automatycznym przeładowaniem kodu:
+```powershell
+git clone https://github.com/Badym/FlatMate.git
+cd FlatMate
+git switch develop
+.\start.ps1
+```
 
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-   ```
+Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z losowymi sekretami (nie jest on śledzony przez Git), a potem buduje i uruchamia aplikację wraz z PostgreSQL. Przy kolejnych uruchomieniach zachowuje istniejący `.env`. Migracje bazy wykonują się automatycznie. Domyślny adres aplikacji to http://localhost:8000; jeśli zmieniono `WEB_PORT`, użyj ustawionego portu.
 
-   W tym trybie pod http://localhost:8000/_ui/ jest biblioteka komponentów interfejsu.
+### Sprawdzenie stanu
 
-4. Dane demonstracyjne: 3 konta `@flatmate.example`, mieszkanie i zadania. Hasło do kont to wartość `DEMO_PASSWORD` z `.env`:
+- `GET /health` — liveness aplikacji, publiczny i niezależny od bazy danych. Przykład:
 
-   ```bash
-   docker compose exec web flask --app wsgi seed-demo           # w działającym kontenerze
-   uv run flask --app wsgi seed-demo --reset                    # poza Dockerem, od nowa
-   ```
+  ```powershell
+  Invoke-RestMethod http://localhost:8000/health
+  ```
 
-   Potem zaloguj się na http://localhost:8000/login, np. jako `ola@flatmate.example` (admin mieszkania demo). W środowisku produkcyjnym polecenie odmawia działania.
+  Odpowiedź HTTP 200:
 
-5. Testy:
+  ```json
+  {"status": "ok"}
+  ```
 
-   ```bash
-   docker compose --profile test run --rm tests   # na PostgreSQL, tak jak w CI
-   docker compose up -d db-test && uv run pytest  # lokalnie, na tej samej bazie testowej PostgreSQL
-   ```
+- `GET /ready` — gotowość aplikacji do obsługi żądań, w tym dostępność bazy. Przykład:
 
-6. Zmiana modeli wymaga migracji w tym samym PR-ze:
+  ```powershell
+  Invoke-RestMethod http://localhost:8000/ready
+  ```
 
-   ```bash
-   uv run flask --app wsgi db migrate -m "opis zmiany"
-   uv run flask --app wsgi db upgrade
-   ```
+  Przy działającej bazie zwraca HTTP 200 i `{"status":"ok","database":"ok"}`. Jeśli baza jest niedostępna, zwraca HTTP 503 i `{"status":"degraded","database":"error"}`.
 
-Gdy porty 8000 lub 5432 są zajęte, zmień `WEB_PORT` i `POSTGRES_PORT` w `.env`.
+### Dane demo i tryb deweloperski
+
+Dane demonstracyjne można utworzyć poleceniem `docker compose exec web flask --app wsgi seed-demo`. Wcześniej ustaw w `.env` wartość `DEMO_PASSWORD` (co najmniej 12 znaków) i wczytaj ją do kontenera przez `docker compose up -d web`; zaloguj się np. jako `ola@flatmate.example`. Polecenie seedowania jest wyłączone w środowisku produkcyjnym.
+
+Tryb deweloperski z automatycznym przeładowaniem kodu i biblioteką komponentów pod `/_ui/`:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Porty można zmienić w `.env` (`WEB_PORT`, `POSTGRES_PORT`). Szczegółowa instrukcja instalacji Dockera i rozwiązywania problemów: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
+
+Testy wymagają `uv` i są uruchamiane w kontenerze na PostgreSQL:
+
+```powershell
+docker compose --profile test run --rm --build tests
+```
 
 Szczegóły architektury i etapy prac: [docs/PLAN_IMPLEMENTACJI.md](docs/PLAN_IMPLEMENTACJI.md). Model danych: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).

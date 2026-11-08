@@ -79,7 +79,7 @@ FlatMate/
 │   ├── audit.py                    logger zdarzeń bezpieczeństwa (etap 3)
 │   ├── cli.py                      flask seed-demo (etap 3)
 │   ├── controllers/             *  C – endpointy (blueprinty), bez logiki i zapytań
-│   │   ├── main_controller.py   *  /, /health
+│   │   ├── main_controller.py   *  /, /health, /ready
 │   │   ├── auth_controller.py   *  /login, /register, /logout
 │   │   ├── ui_controller.py     *  /_ui/ – biblioteka komponentów (tylko dev)
 │   │   ├── error_controller.py  *  strony błędów 400–500
@@ -410,7 +410,7 @@ Jeśli skan z logowaniem okaże się zbyt kosztowny w konfiguracji, zostaje sam 
 
 Ochrona gałęzi `main` w ustawieniach repo: wymagane zielone checki i PR. Ustawia ją właściciel repozytorium ręcznie.
 
-`Dockerfile` (od etapu 2): `python:3.13-slim` + uv, etapy `base` → `test` → `runtime`; w obrazie produkcyjnym użytkownik bez roota, `HEALTHCHECK` na `/health`, `gunicorn --workers 1 --threads 4 --no-control-socket wsgi:app` (D-16). W etapie 9 dochodzi wolumen na awatary i konfiguracja proxy z HTTPS.
+`Dockerfile` (od etapu 2): `python:3.13-slim` + uv, etapy `base` → `test` → `runtime`; w obrazie produkcyjnym użytkownik bez roota, `HEALTHCHECK` na `/ready`, `gunicorn --workers 1 --threads 4 --no-control-socket wsgi:app` (D-16). `/health` jest liveness probe (HTTP 200, bez zależności od bazy), a `/ready` sprawdza połączenie z bazą. W etapie 9 dochodzi wolumen na awatary i konfiguracja proxy z HTTPS.
 
 ---
 

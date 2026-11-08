@@ -21,5 +21,12 @@ def index() -> str:
 
 @bp.get("/health")
 def health() -> tuple[Response, int]:
+    """Liveness probe: HTTP 200 means the application process can answer requests."""
+    return jsonify({"status": "ok"}), 200
+
+
+@bp.get("/ready")
+def ready() -> tuple[Response, int]:
+    """Readiness probe: checks whether the application can reach its database."""
     status = HealthService().check()
     return jsonify(status.as_dict()), 200 if status.healthy else 503

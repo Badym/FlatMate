@@ -6,10 +6,9 @@ Instrukcja dla komputera, na którym nie ma jeszcze niczego: ani narzędzi, ani 
 | --- | --- | --- |
 | 1 | Instalujesz Git i Docker Desktop | 15–30 min |
 | 2 | Pobierasz repozytorium | 1 min |
-| 3 | Tworzysz plik `.env` z hasłami | 5 min |
-| 4 | Uruchamiasz aplikację | 3–5 min za pierwszym razem |
-| 5 | Tworzysz konta demo i logujesz się | 2 min |
-| 6 | Zatrzymujesz i uruchamiasz ponownie | – |
+| 3 | Uruchamiasz aplikację jednym poleceniem (konfiguracja tworzy się automatycznie) | 3–5 min za pierwszym razem |
+| 4 | Sprawdzasz aplikację; opcjonalnie tworzysz konta demo i logujesz się | 2 min |
+| 5 | Zatrzymujesz i uruchamiasz ponownie | – |
 
 ---
 
@@ -94,68 +93,27 @@ Wszystkie dalsze polecenia wpisujesz w folderze `FlatMate`. Jeśli zamkniesz okn
 
 ---
 
-## Etap 3. Konfiguracja: plik `.env`
+## Etap 3. Uruchomienie i automatyczna konfiguracja
 
-Aplikacja czyta hasła i ustawienia z pliku `.env`. Ten plik nie trafia do repozytorium, więc każdy tworzy własny na podstawie wzoru `.env.example`.
-
-### 3.1. Skopiuj wzór
+Uruchom PowerShell w katalogu repozytorium i wpisz:
 
 ```powershell
-Copy-Item .env.example .env
+.\start.ps1
 ```
 
-### 3.2. Wygeneruj dwa losowe sekrety
-
-Polecenie korzysta z Pythona w kontenerze Dockera, więc nie musisz instalować Pythona. Pierwsze uruchomienie pobiera obraz, co trwa chwilę.
-
-Klucz aplikacji (`SECRET_KEY`, 64 znaki):
-
-```powershell
-docker run --rm python:3.13-slim python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-Hasło do bazy (`POSTGRES_PASSWORD`, 32 znaki):
-
-```powershell
-docker run --rm python:3.13-slim python -c "import secrets; print(secrets.token_hex(16))"
-```
-
-Każde polecenie wypisuje jeden ciąg liter i cyfr. Skopiuj go: zaznacz myszą i naciśnij Enter albo Ctrl+C.
-
-### 3.3. Uzupełnij `.env`
-
-```powershell
-notepad .env
-```
-
-W Notatniku zmień te linie (wartości wpisuj bez cudzysłowów i bez spacji wokół `=`):
-
-| Linia | Co wpisać |
-| --- | --- |
-| `SECRET_KEY=` | pierwszy wygenerowany ciąg (64 znaki) |
-| `POSTGRES_PASSWORD=` | drugi wygenerowany ciąg (32 znaki) |
-| `DATABASE_URL=` | w środku adresu zamień `HASLO_Z_POSTGRES_PASSWORD` na ten sam drugi ciąg; potrzebne tylko przy pracy bez Dockera |
-| `DEMO_PASSWORD=` | wymyślone przez ciebie hasło do kont demo, **co najmniej 12 znaków** |
-| `APP_ENV=` | zostaw `development` |
-
-Zapisz plik (Ctrl+S) i zamknij Notatnik.
+Przy pierwszym uruchomieniu skrypt kopiuje ustawienia z `.env.example`, generuje bezpieczne losowe wartości `SECRET_KEY` i `POSTGRES_PASSWORD`, zapisuje je w ignorowanym przez Git pliku `.env`, a następnie uruchamia aplikację i bazę przez Docker Compose. Niczego nie musisz ręcznie uzupełniać. Przy kolejnych startach istniejący `.env` pozostaje bez zmian.
 
 Uwagi:
 
 - `APP_ENV=production` zakłada HTTPS za reverse proxy. Na własnym komputerze zostaw `development`.
-- Hasło do bazy ustaw raz, przed pierwszym uruchomieniem. Baza zapamiętuje je przy tworzeniu, a późniejsza zmiana w `.env` jej nie zmienia (zobacz „Najczęstsze problemy”).
+- Hasło do bazy i pozostałe dane istniejącej instalacji są zachowane w `.env` i wolumenach Dockera.
+- Jeśli chcesz utworzyć konta demo, przed uruchomieniem `seed-demo` wpisz własne `DEMO_PASSWORD` w `.env`; do samego uruchomienia aplikacji nie jest potrzebne.
 
 ---
 
-## Etap 4. Uruchomienie aplikacji
+## Etap 4. Sprawdzenie działania
 
-Upewnij się, że Docker Desktop działa (**Engine running**), i wpisz:
-
-```powershell
-docker compose up --build
-```
-
-Za pierwszym razem Docker pobiera obrazy i buduje aplikację, co zajmuje kilka minut. Potem kontener sam przygotowuje bazę (migracje) i uruchamia serwer. Aplikacja jest gotowa, gdy w logach pojawi się linia podobna do tej:
+Przy pierwszym uruchomieniu Docker pobiera obrazy i buduje aplikację, co zajmuje kilka minut. Potem kontener automatycznie wykonuje migracje bazy i uruchamia serwer. Aplikacja jest gotowa, gdy w logach pojawi się linia podobna do tej:
 
 ```text
 web-1  | [2026-10-28 18:30:00 +0000] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
@@ -163,15 +121,41 @@ web-1  | [2026-10-28 18:30:00 +0000] [1] [INFO] Listening at: http://0.0.0.0:800
 
 **Zostaw to okno otwarte**, bo zamknięcie go zatrzymuje aplikację.
 
-Otwórz w przeglądarce **http://localhost:8000**. Zobaczysz stronę główną FlatMate. Pod adresem http://localhost:8000/health aplikacja zgłasza swój stan.
+Otwórz w przeglądarce **http://localhost:8000**. Endpoint liveness jest dostępny bez logowania:
+
+```powershell
+Invoke-RestMethod http://localhost:8000/health
+```
+
+Odpowiedź HTTP 200:
+
+```json
+{"status":"ok"}
+```
+
+Gotowość bazy sprawdzisz osobno pod `/ready`; przy niedostępnej bazie endpoint zwraca HTTP 503:
+
+```powershell
+Invoke-RestMethod http://localhost:8000/ready
+```
 
 ---
 
-## Etap 5. Konta demo i logowanie
+### 4.1. Utwórz dane demonstracyjne
 
-### 5.1. Utwórz dane demonstracyjne
+Opcjonalnie: aby utworzyć konta demo, najpierw w drugim oknie PowerShella otwórz `.env`:
 
-Otwórz **drugie** okno PowerShella (pierwsze jest zajęte przez serwer) i wpisz:
+```powershell
+notepad .env
+```
+
+Wpisz własne hasło (co najmniej 12 znaków) przy `DEMO_PASSWORD=`, zapisz plik, a potem wczytaj ustawienie do kontenera:
+
+```powershell
+docker compose up -d web
+```
+
+Teraz utwórz konta demo:
 
 ```powershell
 cd $HOME\Documents\FlatMate
@@ -188,7 +172,7 @@ Polecenie tworzy mieszkanie „Mickiewicza 12/4 (demo)”, kilka zadań i trzy k
 
 Hasło do wszystkich trzech kont to wartość `DEMO_PASSWORD` z twojego pliku `.env`.
 
-### 5.2. Zaloguj się
+### 4.2. Zaloguj się
 
 1. Na stronie http://localhost:8000 kliknij **Zaloguj się** w prawym górnym rogu.
 2. W polu **Adres e-mail** wpisz `ola@flatmate.example`.
@@ -197,7 +181,7 @@ Hasło do wszystkich trzech kont to wartość `DEMO_PASSWORD` z twojego pliku `.
 
 Po zalogowaniu zobaczysz stronę **Moje mieszkania** z mieszkaniem demo.
 
-### 5.3. Co możesz teraz zrobić
+### 4.3. Co możesz teraz zrobić
 
 - **Utworzenie mieszkania:** na stronie **Moje mieszkania** kliknij **Utwórz mieszkanie**, wpisz nazwę i zapisz. Automatycznie zostaniesz administratorem.
 - **Zaproszenie współlokatora:** wejdź do mieszkania, wybierz **Zaproszenia** i utwórz link. Skopiuj go od razu — token jest wyświetlany tylko po utworzeniu. Link działa 7 dni; możesz go unieważnić na stronie zaproszeń.
@@ -208,11 +192,11 @@ Po zalogowaniu zobaczysz stronę **Moje mieszkania** z mieszkaniem demo.
 - **Wylogowanie:** w tym samym menu wybierz **Wyloguj się**.
 - **Własne konto:** po wylogowaniu kliknij **Załóż konto** i wypełnij formularz: nazwę, e-mail i dwa razy hasło (co najmniej 12 znaków).
 
-Tworzenie i zarządzanie mieszkaniami oraz zaproszenia działają. Obsługa zadań i kalendarz są jeszcze w kolejnych etapach projektu; zadania widoczne na koncie demo służą na razie tylko do demonstracji listy.
+Tworzenie i zarządzanie mieszkaniami, zaproszenia oraz tworzenie, edycja, usuwanie i filtrowanie zadań jednorazowych działają. Przejmowanie i oznaczanie zadań jako wykonane, zadania cykliczne oraz kalendarz są jeszcze w kolejnych etapach projektu; zadania konta demo służą na razie do demonstracji listy.
 
 ---
 
-## Etap 6. Zatrzymanie i ponowne uruchomienie
+## Etap 5. Zatrzymanie i ponowne uruchomienie
 
 | Chcesz | Polecenie |
 | --- | --- |
@@ -250,7 +234,7 @@ Praca bez kontenera aplikacji (wymaga [uv](https://docs.astral.sh/uv/): `winget 
 | Objaw | Przyczyna i rozwiązanie |
 | --- | --- |
 | `error during connect` albo `Cannot connect to the Docker daemon` | Docker Desktop nie działa. Uruchom go i poczekaj na **Engine running**. |
-| `Ustaw SECRET_KEY w pliku .env` albo `Ustaw POSTGRES_PASSWORD w pliku .env` | Brak pliku `.env` albo pusta wartość. Plik musi się nazywać dokładnie `.env`: sprawdź poleceniem `Get-ChildItem -Force .env*`, czy Notatnik nie zapisał go jako `.env.txt`. |
+| `Ustaw SECRET_KEY w pliku .env` albo `Ustaw POSTGRES_PASSWORD w pliku .env` | Uruchom aplikację przez `.\start.ps1`, aby wygenerować brakujący `.env`. Jeśli plik już istnieje, sprawdź poleceniem `Get-ChildItem -Force .env*`, czy nazywa się dokładnie `.env`, a nie `.env.txt`, i czy zawiera wymagane wartości. |
 | `port is already allocated` albo `Bind for 127.0.0.1:8000 failed` | Port zajęty przez inny program. W `.env` zmień `WEB_PORT=8000` na np. `8001` (a przy błędzie z portem 5432 `POSTGRES_PORT=5432` na `5433`) i otwórz http://localhost:8001. |
 | `password authentication failed for user "flatmate"` | `POSTGRES_PASSWORD` zmieniono po pierwszym uruchomieniu. Przywróć poprzednie hasło albo usuń bazę poleceniem `docker compose down -v` (traci dane) i uruchom aplikację ponownie. |
 | `Ustaw DEMO_PASSWORD (co najmniej 12 znaków)` | Uzupełnij `DEMO_PASSWORD` w `.env`, wpisz `docker compose up -d`, żeby kontener wczytał nową wartość, i powtórz `seed-demo`. |

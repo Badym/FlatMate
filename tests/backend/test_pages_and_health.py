@@ -17,17 +17,35 @@ def test_landing_page(client: FlaskClient) -> None:
     assert 'id="funkcje"' in html
 
 
-def test_health_reports_database_ok(client: FlaskClient) -> None:
+def test_health_reports_liveness_without_database_details(client: FlaskClient) -> None:
     response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ok"}
+
+
+def test_health_stays_ok_when_database_is_unavailable(
+    client: FlaskClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(HealthRepository, "ping", lambda self: False)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ok"}
+
+
+def test_ready_reports_database_ok(client: FlaskClient) -> None:
+    response = client.get("/ready")
 
     assert response.status_code == 200
     assert response.get_json() == {"status": "ok", "database": "ok"}
 
 
-def test_health_reports_database_failure(client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_ready_reports_database_failure(client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(HealthRepository, "ping", lambda self: False)
 
-    response = client.get("/health")
+    response = client.get("/ready")
 
     assert response.status_code == 503
     assert response.get_json() == {"status": "degraded", "database": "error"}

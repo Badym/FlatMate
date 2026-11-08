@@ -1,5 +1,6 @@
 # FlatMate: aplikacja + PostgreSQL.
-#   docker compose up --build                      – aplikacja na http://localhost:8000
+#   .\start.ps1                                    – utwórz lokalny .env i uruchom aplikację (Windows)
+#   docker compose up --build                      – uruchom aplikację z istniejącym .env
 #   docker compose --profile test run --rm tests   – testy w kontenerze na osobnej, ulotnej bazie
 #   docker compose up -d db-test && uv run pytest   – testy lokalnie na tej samej bazie testowej
 # Sekrety pochodzą z pliku .env (wzór: .env.example).
