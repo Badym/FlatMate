@@ -56,8 +56,10 @@ Sklonuj repozytorium, przejdź do jego katalogu i uruchom aplikację:
 git clone https://github.com/Badym/FlatMate.git
 cd FlatMate
 git switch develop
-.\start.ps1
+powershell -ExecutionPolicy Bypass -File .\start.ps1
 ```
+
+`-ExecutionPolicy Bypass` jest potrzebne, bo Windows domyślnie blokuje uruchamianie skryptów PowerShella; działa tylko dla tego jednego uruchomienia.
 
 Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z losowym kluczem aplikacji oraz hasłami bazy i kont demo (plik jest ignorowany przez Git). Przy kolejnych uruchomieniach zachowuje te hasła i synchronizuje hasło roli PostgreSQL z `.env`, bez usuwania danych. Migracje bazy wykonują się automatycznie. Domyślny adres aplikacji to http://localhost:8000; jeśli zmieniono `WEB_PORT`, użyj ustawionego portu.
 
@@ -93,9 +95,9 @@ Tryb deweloperski z automatycznym przeładowaniem kodu i biblioteką komponentó
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-Porty można zmienić w `.env` (`WEB_PORT`, `POSTGRES_PORT`). Szczegółowa instrukcja instalacji Dockera i rozwiązywania problemów: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
+Porty można zmienić w `.env` (`WEB_PORT`, `POSTGRES_PORT`). Szczegółowa instrukcja instalacji Dockera, praca bez kontenera aplikacji (uv) i rozwiązywanie problemów: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
 
-Testy wymagają `uv` i są uruchamiane w kontenerze na PostgreSQL:
+Testy działają w kontenerze na osobnej bazie PostgreSQL, tak jak w CI (bez instalowania `uv`):
 
 ```powershell
 docker compose --profile test run --rm --build tests
