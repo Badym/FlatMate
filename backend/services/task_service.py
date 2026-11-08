@@ -27,6 +27,10 @@ class TaskPermissionDenied(TaskActionError):
     pass
 
 
+class TaskAlreadyDone(TaskActionError):
+    """Wykonane zadanie zostaje jako historia: bez edycji i usuwania."""
+
+
 class InvalidTaskData(TaskActionError):
     def __init__(self, field: str, message: str) -> None:
         super().__init__(message)
@@ -151,6 +155,8 @@ class TaskService:
             raise TaskNotFound
         if not is_admin and task.created_by_id != user_id:
             raise TaskPermissionDenied
+        if task.is_done:
+            raise TaskAlreadyDone
         return task
 
     def _validate_assignee(

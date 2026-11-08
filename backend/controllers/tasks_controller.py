@@ -15,12 +15,15 @@ from backend.security.access import flat_member_required
 from backend.services.task_service import (
     InvalidTaskData,
     InvalidTaskFilter,
+    TaskAlreadyDone,
     TaskNotFound,
     TaskPermissionDenied,
     TaskService,
 )
 
 bp = Blueprint("tasks", __name__, url_prefix="/flats/<int:flat_id>/tasks")
+
+TASK_DONE_MESSAGE = "Wykonanego zadania nie można zmienić ani usunąć."
 
 
 class TaskFormData(TypedDict):
@@ -156,6 +159,9 @@ def edit(flat_id: int, task_id: int) -> str:
         abort(404)
     except TaskPermissionDenied:
         abort(403)
+    except TaskAlreadyDone:
+        flash(TASK_DONE_MESSAGE, "warning")
+        return redirect(url_for("tasks.index", flat_id=flat_id))
 
     form = TaskForm(obj=task)
     _prepare_form(form, flat_id)
@@ -175,6 +181,9 @@ def edit(flat_id: int, task_id: int) -> str:
             abort(404)
         except TaskPermissionDenied:
             abort(403)
+        except TaskAlreadyDone:
+            flash(TASK_DONE_MESSAGE, "warning")
+            return redirect(url_for("tasks.index", flat_id=flat_id))
         except InvalidTaskData as exc:
             _add_task_error(form, exc)
         else:
@@ -192,5 +201,8 @@ def delete(flat_id: int, task_id: int):
         abort(404)
     except TaskPermissionDenied:
         abort(403)
+    except TaskAlreadyDone:
+        flash(TASK_DONE_MESSAGE, "warning")
+        return redirect(url_for("tasks.index", flat_id=flat_id))
     flash("Usunięto zadanie.", "info")
     return redirect(url_for("tasks.index", flat_id=flat_id))

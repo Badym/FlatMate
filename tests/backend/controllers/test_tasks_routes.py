@@ -272,3 +272,39 @@ def test_task_form_rejects_type_from_another_flat(
     assert response.status_code == 200
     assert "Wybierz prawidłową opcję." in response.get_data(as_text=True)
     assert db.session.query(Task).count() == 0
+
+
+def test_done_task_cannot_be_edited_or_deleted(
+    client, login, make_user, make_flat, default_task_types
+) -> None:
+    admin = make_user()
+    flat = make_flat(admin=admin)
+    task = _task(
+        flat, default_task_types[0], admin,
+        assignee_id=admin.id, status=TaskStatus.DONE, done_at=utcnow(), done_by_id=admin.id,
+    )
+    login(admin)
+
+    listing = client.get(f"/flats/{flat.id}/tasks?filter=done").get_data(as_text=True)
+    assert task.title in listing
+    assert "Edytuj" not in listing
+
+    edit_page = client.get(f"/flats/{flat.id}/tasks/{task.id}/edit", follow_redirects=True)
+    assert "Wykonanego zadania nie można zmienić ani usunąć." in edit_page.get_data(as_text=True)
+
+    edited = client.post(
+        f"/flats/{flat.id}/tasks/{task.id}/edit",
+        data={
+            "title": "Nowa nazwa",
+            "task_type_id": str(default_task_types[0].id),
+            "due_date": "2026-11-20",
+            "assignee_id": "pool",
+        },
+    )
+    assert edited.status_code == 302
+    assert task.title == "Odkurzyć salon"
+    assert task.assignee_id == admin.id
+
+    deleted = client.post(f"/flats/{flat.id}/tasks/{task.id}/delete")
+    assert deleted.status_code == 302
+    assert db.session.get(Task, task.id) is not None
