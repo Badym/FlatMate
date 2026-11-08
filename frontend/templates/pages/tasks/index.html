@@ -1,0 +1,61 @@
+{% extends "layouts/base.html" %}
+{% from "components/empty_state.html" import empty_state %}
+
+{% block title %}Zadania · {{ flat.name }} · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <a class="btn btn-ghost mb-3" href="{{ url_for('flats.detail', flat_id=flat.id) }}">
+    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ flat.name }}
+  </a>
+  <header class="fm-page-header">
+    <div>
+      <span class="fm-eyebrow">Mieszkanie</span>
+      <h1 class="fm-page-title">Zadania jednorazowe</h1>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('tasks.create', flat_id=flat.id) }}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Dodaj zadanie
+    </a>
+  </header>
+
+  {% if tasks %}
+  <div class="d-grid gap-3">
+    {% for task in tasks %}
+    <article class="fm-card p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div class="flex-grow-1">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <h2 class="h5 fw-bold mb-0">{{ task.title }}</h2>
+            <span class="badge text-bg-light">{{ task.task_type.name }}</span>
+          </div>
+          {% if task.description %}
+          <p class="text-body-secondary mb-2">{{ task.description }}</p>
+          {% endif %}
+          <div class="small text-body-secondary d-flex flex-wrap gap-3">
+            <span><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ task.due_date.strftime("%d.%m.%Y") }}</span>
+            <span>
+              <i class="bi bi-person me-1" aria-hidden="true"></i>
+              {% if task.assignee %}{{ task.assignee.display_name }}{% else %}Do puli{% endif %}
+            </span>
+          </div>
+        </div>
+        {% if membership.is_admin or task.created_by_id == current_user.id %}
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-neutral" href="{{ url_for('tasks.edit', flat_id=flat.id, task_id=task.id) }}">Edytuj</a>
+          <form method="post" action="{{ url_for('tasks.delete', flat_id=flat.id, task_id=task.id) }}">
+            {{ action_form.csrf_token }}
+            <button class="btn btn-sm btn-outline-danger" type="submit">Usuń</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  {% call empty_state("bi-list-check", "Brak zadań jednorazowych", "Dodaj zadanie, aby zaplanować obowiązki w mieszkaniu.") %}
+  <a class="btn btn-primary" href="{{ url_for('tasks.create', flat_id=flat.id) }}">Dodaj zadanie</a>
+  {% endcall %}
+  {% endif %}
+</div>
+{% endblock %}

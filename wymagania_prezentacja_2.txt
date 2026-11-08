@@ -1,0 +1,94 @@
+Etap 2 projektu
+Etap 2 polega na zaprogramowaniu aplikacji z wcześniej
+określonymi funkcjonalnościami uwzględniając podane
+wymagania.
+Etap 2 projektu
+W ramach kolejnych kroków etapu drugiego należy:
+• utworzyć główną strukturę projektu,
+• przygotować bazę danych,
+• utworzyć tabele w bazie danych,
+• dodać funkcje do aplikacji związane z rejestracją i logowaniem użytkownika,
+• dodać funkcje dostępne dla użytkownika (w zależności od projektu np. tworzenie,
+modyfikacja, usuwanie zadań z listy),
+• dodać endpoint do sprawdzania czy aplikacja jest uruchomiona,
+• uruchomić aplikację,
+• sprawdzić czy endpoint zwraca odpowiedni status.
+Etap 2 projektu
+Poprzez główną strukturę projektu, chodzi o utworzenie:
+• katalogu na kod aplikacji,
+• osobnego katalogu na testy aplikacji (w tym etapie jeszcze może być pusty),
+• pliku .gitignore w którym można określić pliki do zignorowania przez git,
+• pliku .env do przechowywania konfiguracji i danych poufnych,
+• plik do przechowywania informacji o zależnościach (wymaganych bibliotekach) w
+formacie i nazwie dostosowanym do wykorzystywanego języka.
+Plik .env oraz pliki tymczasowe, środowiska i bazy danych powinny być uwzględniony do
+wykluczenia przez git w pliku .gitignore.
+Wszystkie wymagane biblioteki wraz z wersją (inaczej zależności) do działania aplikacji
+muszą być zapisane w jednym pliku.
+Etap 2 projektu
+Informacja dotyczące bazy danych:
+• Należy odpowiednio przygotować bazę danych do aplikacji dostosowaną do funkcji
+jakie aplikacja będzie zapewniać.
+• Baza danych powinna składać się z min. 2 tabel. Tabele powinny zostać powiązane
+relacją za pomocą id użytkownika.
+• Można wykorzystać dowolny system zarządzania bazą danych np. SQLite, MariaDB,
+MySQL, PostgreSQL, Microsoft SQL itp..
+• Hasła użytkowników przechowywane w bazie nie powinny być zapisane jawnym
+tekstem, lecz w formie skrótu tzw. hasha.
+• Baza danych musi być tworzona automatycznie przy uruchomieniu aplikacji.
+• Aplikacja nie może wymagać ręcznego tworzenia tabel.
+Etap 2 projektu
+• Aplikacja powinna być prosta do uruchomienia jednym poleceniem, bez
+dodatkowej konfiguracji, opis polecenia do uruchomienia powinien się znajdować w
+pliku README.md
+• Poszczególne funkcjonalności powinny zostać zaimplementowane, jako osobne
+funkcje w kodzie np. osobna funkcja do rejestracji, logowania, dodawania zadania
+itp.
+• Nie należy przechowywać haseł, tokenów API czy innych danych poufnych
+bezpośrednio w kodzie aplikacji, należy do tego wykorzystać np. plik .env
+• Aplikacja musi odpowiednio obsługiwać błędy i zwracać odpowiednie komunikaty, i
+kody błędów.
+• Aplikacja musi posiadać odpowiednią walidację danych np. zabezpieczenie pustych
+pól tekstowych, odpowiednie wymagania dotyczące hasła itp.
+• Aplikacja musi zapewniać odpowiednią kontrolę dostępu, czyli możliwość
+wykonywania swoich akcji w aplikacji po zalogowaniu, brak możliwości wykonania
+akcji innego użytkownika.
+Endpoint
+W kontekście tworzenia oprogramowania endpoint to konkretny punkt
+dostępu (adres URL) w aplikacji, do którego wysyła się zapytania, aby pobrać,
+zapisać, zmienić lub usunąć dane.
+• Klient (np. przeglądarka lub aplikacja mobilna) wysyła żądanie HTTP (np.
+GET, POST, PUT, DELETE) do serwera na określony endpoint.
+• Każdy endpoint zwraca kod odpowiedzi HTTP wraz z wysyłanymi danymi.
+Kod statusu HTTP (HTTP status code) jest kluczową częścią odpowiedzi
+serwera. Informuje on aplikację kliencką (np. przeglądarkę, aplikację
+mobilną), czy żądanie zakończyło się sukcesem, czy wystąpił błąd i jaka była
+jego przyczyna.
+Przykłady:
+• GET /api/users – pobiera listę wszystkich użytkowników.
+• POST /api/invoices – tworzy nową fakturę w systemie.
+Etap 2 projektu
+Aplikacja ma mieć jeden endpoint o nazwie /health, który ma zwrócić plik json ze
+statusem aplikacji – czy aplikacja jest uruchomiona.
+Zwracany plik json:
+{
+"status": "ok"
+}
+Endpoint ten musi także zwracać kod HTTP 200 i być dostępny bez logowania.
+Etap 2 projektu
+Plik README.md należy zaktualizować o
+• wymagania środowiskowe,
+• sposób instalacji,
+• sposób uruchomienia,
+• adres aplikacji,
+• opis endpointu,
+• przykładowe żądania.
+Etap 2 projektu
+Zadania do wykonania należy podzielić między członków
+zespołu z wykorzystanie wcześniej wybranego narzędzia do
+zarządzania zespołem.
+Podczas pisania oprogramowania należy wykorzystywać
+wcześniej utworzone repozytorium. Każda osoba z zespołu
+ma mieć przynajmniej dwa commity (wprowadzone zmiany)
+na tydzień. Opis commita ma wyjaśniać konkretnie i jasno co
+zostało zrobione.

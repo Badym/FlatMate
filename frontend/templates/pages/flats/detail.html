@@ -13,6 +13,9 @@
       <p class="text-body-secondary mb-0">{{ members|selectattr("status", "equalto", "active")|list|length }} aktywnych członków</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-primary" href="{{ url_for('tasks.index', flat_id=flat.id) }}">
+        <i class="bi bi-list-check me-1" aria-hidden="true"></i>Zadania
+      </a>
       <a class="btn btn-neutral" href="{{ url_for('flats.members', flat_id=flat.id) }}">
         <i class="bi bi-people me-1" aria-hidden="true"></i>Członkowie
       </a>

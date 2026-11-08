@@ -11,6 +11,18 @@ from backend.repositories.base_repository import FlatScopedRepository
 class TaskRepository(FlatScopedRepository[Task]):
     model = Task
 
+    def list_one_off(self, flat_id: int) -> list[Task]:
+        statement = (
+            self._select()
+            .where(
+                Task.flat_id == flat_id,
+                Task.parent_task_id.is_(None),
+                Task.recurrence == Recurrence.NONE,
+            )
+            .order_by(Task.due_date, Task.id)
+        )
+        return list(self._session.scalars(statement))
+
     def count_open(self, flat_id: int) -> int:
         """Niewykonane zadania do zrobienia (bez szablonów serii, które same nie są zadaniami)."""
         statement = select(func.count()).select_from(Task).where(
