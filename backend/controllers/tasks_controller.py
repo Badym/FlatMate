@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import TypedDict
 
-from flask import Blueprint, abort, flash, g, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from backend.forms.flat_forms import EmptyActionForm
@@ -14,6 +14,7 @@ from backend.models import Task
 from backend.security.access import flat_member_required
 from backend.services.task_service import (
     InvalidTaskData,
+    InvalidTaskFilter,
     TaskNotFound,
     TaskPermissionDenied,
     TaskService,
@@ -83,11 +84,40 @@ def _add_task_error(form: TaskForm, error: InvalidTaskData) -> None:
 @bp.get("")
 @flat_member_required
 def index(flat_id: int) -> str:
+    list_filter = request.args.get("filter", "all")
+    service = _service()
+    try:
+        tasks = service.list_one_off(flat_id, current_user.id, list_filter)
+    except InvalidTaskFilter:
+        abort(400)
     return render_template(
         "pages/tasks/index.html",
         flat=g.flat,
         membership=g.membership,
-        tasks=_service().list_one_off(flat_id),
+        tasks=tasks,
+        list_filter=list_filter,
+        today=date.today(),
+        empty_title={
+            "all": "Brak zadań jednorazowych",
+            "mine": "Nie masz przypisanych zadań",
+            "pool": "Pula zadań jest pusta",
+            "overdue": "Brak zaległych zadań",
+            "done": "Brak wykonanych zadań",
+        }[list_filter],
+        empty_text={
+            "all": "Dodaj zadanie, aby zaplanować obowiązki w mieszkaniu.",
+            "mine": "Przypisane do Ciebie otwarte zadania pojawią się tutaj.",
+            "pool": "Nie ma teraz otwartych zadań do wzięcia.",
+            "overdue": "Nie masz otwartych zadań po terminie.",
+            "done": "Wykonane zadania pojawią się tutaj.",
+        }[list_filter],
+        filter_options=(
+            ("all", "Wszystkie"),
+            ("mine", "Moje"),
+            ("pool", "Pula"),
+            ("overdue", "Zaległe"),
+            ("done", "Wykonane"),
+        ),
         action_form=EmptyActionForm(),
     )
 

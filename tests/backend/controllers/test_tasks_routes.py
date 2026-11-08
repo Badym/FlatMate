@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 from backend.core.extensions import db
 from backend.models import Recurrence, Task, TaskStatus, TaskType
+from backend.models.types import utcnow
 
 
 def _task(flat, task_type, author, **fields) -> Task:
+    fields.setdefault("due_date", date(2026, 11, 12))
+    fields.setdefault("title", "Odkurzyć salon")
     task = Task(
         flat=flat,
         task_type=task_type,
         created_by=author,
-        title="Odkurzyć salon",
-        due_date=date(2026, 11, 12),
         **fields,
     )
     db.session.add(task)
@@ -183,6 +184,68 @@ def test_member_can_open_task_list_and_admin_controls_are_visible(
     assert "Odkurzyć salon" in html
     assert "Edytuj" in html
     assert "Usuń" in html
+
+
+def test_task_list_filters(
+    client, login, make_user, make_flat, add_member, default_task_types
+) -> None:
+    admin, member = make_user(), make_user()
+    flat = make_flat(admin=admin)
+    add_member(flat, member)
+    tasks = {
+        "mine": _task(
+            flat, default_task_types[0], admin,
+            title="Moje otwarte", assignee_id=member.id, due_date=date.today() + timedelta(days=2),
+        ),
+        "pool": _task(
+            flat, default_task_types[0], admin,
+            title="Do wzięcia", assignee_id=None, due_date=date.today() + timedelta(days=3),
+        ),
+        "overdue": _task(
+            flat, default_task_types[0], admin,
+            title="Zaległe zadanie", assignee_id=member.id, due_date=date.today() - timedelta(days=1),
+        ),
+        "done": _task(
+            flat, default_task_types[0], admin,
+            title="Zakończone zadanie",
+            assignee_id=member.id,
+            status=TaskStatus.DONE,
+            done_at=utcnow(),
+        ),
+        "other": _task(
+            flat, default_task_types[0], admin,
+            title="Przypisane adminowi", assignee_id=admin.id, due_date=date.today() + timedelta(days=1),
+        ),
+    }
+    login(member)
+    route = f"/flats/{flat.id}/tasks"
+
+    for selected_filter, expected_titles in (
+        ("mine", {"Moje otwarte", "Zaległe zadanie"}),
+        ("pool", {"Do wzięcia"}),
+        ("overdue", {"Zaległe zadanie"}),
+        ("done", {"Zakończone zadanie"}),
+    ):
+        response = client.get(route, query_string={"filter": selected_filter})
+        html = response.get_data(as_text=True)
+        assert response.status_code == 200
+        found = [task.title for task in tasks.values() if task.title in html]
+        assert set(found) == expected_titles, f"{selected_filter}: {found}"
+
+    all_tasks = client.get(route, query_string={"filter": "all"})
+    all_html = all_tasks.get_data(as_text=True)
+    assert all_tasks.status_code == 200
+    assert all(task.title in all_html for task in tasks.values())
+
+
+def test_task_list_rejects_unknown_filter(client, login, make_user, make_flat) -> None:
+    user = make_user()
+    flat = make_flat(admin=user)
+    login(user)
+
+    response = client.get(f"/flats/{flat.id}/tasks?filter=unknown")
+
+    assert response.status_code == 400
 
 
 def test_task_form_rejects_type_from_another_flat(

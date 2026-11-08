@@ -33,7 +33,7 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 
 - rejestracja, logowanie i edycja profilu,
 - mieszkania z rolą admina; dołączanie przez link zaproszenia z akceptacją admina,
-- tworzenie, edycja i usuwanie zadań jednorazowych z typem, terminem i przypisaniem,
+- tworzenie, edycja i usuwanie zadań jednorazowych z typem, terminem i przypisaniem; przegląd z filtrami: moje, pula, wszystkie, zaległe i wykonane,
 - zadania jednorazowe i cykliczne z typami, terminami; rotacja, stała osoba lub pula „do wzięcia”,
 - kalendarz zadań mieszkania.
 

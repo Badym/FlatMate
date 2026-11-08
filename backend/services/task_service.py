@@ -9,6 +9,7 @@ from backend.audit import audit_event
 from backend.core.extensions import db
 from backend.models import Recurrence, Task, TaskStatus
 from backend.repositories import MembershipRepository, TaskRepository, TaskTypeRepository
+from backend.repositories.task_repository import TaskListFilter
 
 if TYPE_CHECKING:
     from backend.models import TaskType
@@ -32,7 +33,13 @@ class InvalidTaskData(TaskActionError):
         self.field = field
 
 
+class InvalidTaskFilter(TaskActionError):
+    pass
+
+
 class TaskService:
+    LIST_FILTERS: tuple[TaskListFilter, ...] = ("all", "mine", "pool", "overdue", "done")
+
     def __init__(
         self,
         tasks: TaskRepository | None = None,
@@ -43,8 +50,12 @@ class TaskService:
         self._task_types = task_types or TaskTypeRepository()
         self._memberships = memberships or MembershipRepository()
 
-    def list_one_off(self, flat_id: int) -> list[Task]:
-        return self._tasks.list_one_off(flat_id)
+    def list_one_off(
+        self, flat_id: int, user_id: int, list_filter: str = "all"
+    ) -> list[Task]:
+        if list_filter not in self.LIST_FILTERS:
+            raise InvalidTaskFilter
+        return self._tasks.list_one_off(flat_id, list_filter, user_id)
 
     def list_task_types(self, flat_id: int) -> list[TaskType]:
         return self._task_types.list_available(flat_id)

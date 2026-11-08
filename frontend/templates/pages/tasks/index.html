@@ -18,6 +18,16 @@
     </a>
   </header>
 
+  <nav class="d-flex flex-wrap gap-2 mb-4" aria-label="Filtruj zadania">
+    {% for value, label in filter_options %}
+    <a
+      class="btn btn-sm {{ 'btn-primary' if list_filter == value else 'btn-neutral' }}"
+      href="{{ url_for('tasks.index', flat_id=flat.id, filter=value) }}"
+      {% if list_filter == value %}aria-current="page"{% endif %}
+    >{{ label }}</a>
+    {% endfor %}
+  </nav>
+
   {% if tasks %}
   <div class="d-grid gap-3">
     {% for task in tasks %}
@@ -27,6 +37,11 @@
           <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
             <h2 class="h5 fw-bold mb-0">{{ task.title }}</h2>
             <span class="badge text-bg-light">{{ task.task_type.name }}</span>
+            {% if task.is_done %}
+            <span class="badge text-bg-success">Wykonane</span>
+            {% elif task.due_date < today %}
+            <span class="badge text-bg-danger">Zaległe</span>
+            {% endif %}
           </div>
           {% if task.description %}
           <p class="text-body-secondary mb-2">{{ task.description }}</p>
@@ -53,8 +68,10 @@
     {% endfor %}
   </div>
   {% else %}
-  {% call empty_state("bi-list-check", "Brak zadań jednorazowych", "Dodaj zadanie, aby zaplanować obowiązki w mieszkaniu.") %}
+  {% call empty_state("bi-list-check", empty_title, empty_text) %}
+  {% if list_filter == "all" %}
   <a class="btn btn-primary" href="{{ url_for('tasks.create', flat_id=flat.id) }}">Dodaj zadanie</a>
+  {% endif %}
   {% endcall %}
   {% endif %}
 </div>
