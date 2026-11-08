@@ -289,3 +289,121 @@ def test_invite_can_be_revoked(client, login, make_user, make_flat) -> None:
     assert invite.revoked is True
     login(make_user())
     assert client.get("/join/revoke-token").status_code == 404
+
+
+def _invite(flat, admin, token: str) -> Invite:
+    invite = Invite(
+        flat=flat,
+        created_by=admin,
+        token_hash=hash_token(token),
+        expires_at=utcnow() + timedelta(days=1),
+    )
+    db.session.add(invite)
+    db.session.commit()
+    return invite
+
+
+def test_dashboard_shows_only_active_members(client, login, make_user, make_flat, add_member) -> None:
+    admin, member = make_user(display_name="Aktywna Ania"), make_user(display_name="Zwykły Zenek")
+    flat = make_flat(admin=admin)
+    add_member(flat, member)
+    add_member(flat, make_user(display_name="Czekający Czesiek"), status=MembershipStatus.PENDING)
+    login(member)
+
+    response = client.get(f"/flats/{flat.id}")
+
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert "Aktywna Ania" in html and "Zwykły Zenek" in html
+    assert "Czekający Czesiek" not in html
+
+
+def test_join_requests_are_visible_only_to_admin(client, login, make_user, make_flat, add_member) -> None:
+    admin, member = make_user(), make_user()
+    pending = make_user(email="czeka@example.com")
+    rejected = make_user(email="odrzucony@example.com")
+    flat = make_flat(admin=admin)
+    add_member(flat, member)
+    add_member(flat, pending, status=MembershipStatus.PENDING)
+    add_member(flat, rejected, status=MembershipStatus.REJECTED)
+
+    login(member)
+    member_view = client.get(f"/flats/{flat.id}/members").get_data(as_text=True)
+    assert member.email in member_view
+    assert "czeka@example.com" not in member_view
+    assert "odrzucony@example.com" not in member_view
+    assert "Akceptuj" not in member_view
+
+    login(admin)
+    admin_view = client.get(f"/flats/{flat.id}/members").get_data(as_text=True)
+    assert "czeka@example.com" in admin_view and "odrzucony@example.com" in admin_view
+    assert "Akceptuj" in admin_view and "Usuń odrzucenie" in admin_view
+
+
+def test_admin_rejects_join_request(client, login, make_user, make_flat, add_member) -> None:
+    admin = make_user()
+    flat = make_flat(admin=admin)
+    join_request = add_member(flat, make_user(), status=MembershipStatus.PENDING)
+    active = add_member(flat, make_user())
+    login(admin)
+
+    rejected = client.post(f"/flats/{flat.id}/members/{join_request.id}/reject", follow_redirects=True)
+    assert "Odrzucono prośbę o dołączenie." in rejected.get_data(as_text=True)
+    assert join_request.status is MembershipStatus.REJECTED
+
+    not_pending = client.post(f"/flats/{flat.id}/members/{active.id}/reject", follow_redirects=True)
+    assert "Nie można odrzucić tej prośby." in not_pending.get_data(as_text=True)
+    assert active.status is MembershipStatus.ACTIVE
+
+
+def test_member_actions_reject_invalid_transitions(client, login, make_user, make_flat, add_member) -> None:
+    admin = make_user()
+    flat = make_flat(admin=admin)
+    own = flat.memberships[0]
+    active = add_member(flat, make_user())
+    pending = add_member(flat, make_user(), status=MembershipStatus.PENDING)
+    login(admin)
+
+    approve = client.post(f"/flats/{flat.id}/members/{active.id}/approve", follow_redirects=True)
+    assert "Nie można zaakceptować tego członkostwa." in approve.get_data(as_text=True)
+
+    remove_admin = client.post(f"/flats/{flat.id}/members/{own.id}/remove", follow_redirects=True)
+    assert "Nie można usunąć tego członkostwa." in remove_admin.get_data(as_text=True)
+    assert own.role is MemberRole.ADMIN
+
+    promote_pending = client.post(f"/flats/{flat.id}/members/{pending.id}/make-admin", follow_redirects=True)
+    assert "Nie można przekazać tej osobie roli administratora." in promote_pending.get_data(as_text=True)
+    assert pending.role is MemberRole.MEMBER
+
+
+def test_admin_cannot_manage_memberships_or_invites_of_another_flat(
+    client, login, make_user, make_flat, add_member
+) -> None:
+    admin, other_admin = make_user(), make_user()
+    flat = make_flat(admin=admin)
+    other_flat = make_flat(admin=other_admin)
+    foreign = add_member(other_flat, make_user(), status=MembershipStatus.PENDING)
+    foreign_invite = _invite(other_flat, other_admin, "foreign-token")
+    login(admin)
+
+    for action in ("approve", "reject", "remove", "make-admin"):
+        response = client.post(f"/flats/{flat.id}/members/{foreign.id}/{action}")
+        assert response.status_code == 404, action
+    assert client.post(f"/flats/{flat.id}/invites/{foreign_invite.id}/revoke").status_code == 404
+    assert foreign.status is MembershipStatus.PENDING
+    assert foreign_invite.revoked is False
+
+
+def test_join_page_shows_request_form_and_status(client, login, make_user, make_flat) -> None:
+    admin, applicant = make_user(), make_user()
+    flat = make_flat(admin=admin, name="Zielona 5")
+    _invite(flat, admin, "page-token")
+    login(applicant)
+
+    before = client.get("/join/page-token").get_data(as_text=True)
+    assert "Zielona 5" in before and "Poproś o dołączenie" in before
+
+    client.post("/join/page-token")
+    after = client.get("/join/page-token").get_data(as_text=True)
+    assert "Twoja prośba oczekuje na akceptację administratora." in after
+    assert "Poproś o dołączenie" not in after
