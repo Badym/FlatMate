@@ -1,0 +1,22 @@
+/* Strony błędów (pages/errors/error.html). */
+
+/* Strona błędu */
+.fm-error {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 11rem);
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.fm-error-card {
+  max-width: 30rem;
+}
+
+.fm-error-code {
+  margin-top: 1.25rem;
+  font-size: clamp(4.5rem, 10vw, 7.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}

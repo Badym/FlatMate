@@ -1,0 +1,20 @@
+{% extends "layouts/base.html" %}
+{% from "components/form_field.html" import form_field %}
+
+{% block title %}Usuń mieszkanie · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5 fm-form-page">
+  <div class="fm-card p-4 p-md-5 border border-danger">
+    <span class="fm-eyebrow text-danger">Nie można cofnąć tej operacji</span>
+    <h1 class="h2 fw-bold mt-2">Usuń mieszkanie</h1>
+    <p>Usunięte zostaną mieszkanie <strong>{{ flat.name }}</strong>, członkostwa, zaproszenia i powiązane dane.</p>
+    <form method="post">
+      {{ form.csrf_token }}
+      {{ form_field(form.confirmation, icon="bi-shield-exclamation", attrs={"autocomplete": "off"}) }}
+      <button class="btn btn-danger" type="submit">Usuń mieszkanie na stałe</button>
+      <a class="btn btn-neutral ms-2" href="{{ url_for('flats.detail', flat_id=flat.id) }}">Anuluj</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

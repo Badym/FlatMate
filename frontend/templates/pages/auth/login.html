@@ -1,0 +1,26 @@
+{#- Logowanie (auth.login). auth_error: ogólny komunikat o nieudanym logowaniu (SR-2). -#}
+{% extends "layouts/auth.html" %}
+{% from "components/flash_messages.html" import flash %}
+{% from "components/form_field.html" import form_field %}
+
+{% block title %}Logowanie · FlatMate{% endblock %}
+
+{% block form %}
+<h1 class="fm-auth-title">Witaj ponownie</h1>
+<p class="text-body-secondary mb-4">Zaloguj się do swojego mieszkania.</p>
+
+{%- if auth_error %}
+<div class="mb-3" role="alert">{{ flash("danger", auth_error, dismissible=False) }}</div>
+{%- endif %}
+
+<form method="post" action="{{ url_for('auth.login', next=next_url) }}" novalidate>
+  {{ form.hidden_tag() }}
+  {{ form_field(form.email, icon="bi-envelope", attrs={"autocomplete": "email", "placeholder": "ty@przyklad.pl", "autofocus": not form.email.data}) }}
+  {{ form_field(form.password, icon="bi-lock", password_toggle=True, attrs={"autocomplete": "current-password", "placeholder": "Twoje hasło", "autofocus": form.email.data is not none and form.email.data != ""}) }}
+  <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Zaloguj się <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+</form>
+
+<p class="text-center text-body-secondary mt-4 mb-0">
+  Nie masz konta? <a class="fw-semibold" href="{{ url_for('auth.register') }}">Załóż je za darmo</a>
+</p>
+{% endblock %}

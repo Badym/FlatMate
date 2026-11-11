@@ -1,0 +1,44 @@
+{#-
+  Układ ekranów logowania i rejestracji: panel z hasłem przewodnim po lewej, formularz po prawej.
+  Bloki: aside_headline, form. Style: css/layouts/auth.css
+-#}
+{% extends "layouts/base.html" %}
+{% from "components/brand.html" import brand %}
+{% from "components/theme_toggle.html" import theme_toggle %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="fm-auth">
+  <aside class="fm-auth-aside" data-bs-theme="dark">
+    {{ brand() }}
+
+    <div>
+      <h2 class="fm-auth-headline">{% block aside_headline %}Wspólne mieszkanie bez sporów o obowiązki.{% endblock %}</h2>
+      <div class="fm-glass d-flex align-items-center gap-3 mt-5" aria-hidden="true">
+        <span class="fm-icon-chip fm-icon-chip-sm"><i class="bi bi-droplet-half"></i></span>
+        <div class="flex-grow-1">
+          <div class="fw-semibold">Sprzątanie łazienki</div>
+          <div class="fm-glass-meta"><i class="bi bi-arrow-repeat me-1"></i>Następna: Marta</div>
+        </div>
+        <span class="fm-avatar fm-avatar-sm u-color-3">MZ</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="fm-auth-main">
+    <div class="d-flex align-items-center justify-content-between">
+      {{ brand("d-lg-none") }}
+      <a class="btn btn-ghost btn-sm d-none d-lg-inline-flex" href="{{ url_for('main.index') }}">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>Strona główna
+      </a>
+      {{ theme_toggle() }}
+    </div>
+
+    <div class="fm-auth-form fm-fade-up">
+      {% block form %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

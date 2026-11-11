@@ -1,0 +1,81 @@
+/* Karty, ikony w kafelkach i kafelki statystyk. */
+
+/* Karty i ikony */
+.fm-card {
+  background: var(--fm-surface);
+  border: 1px solid var(--fm-border);
+  border-radius: var(--fm-radius);
+  box-shadow: var(--fm-shadow-sm);
+}
+
+.fm-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.fm-card-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--fm-primary-rgb), 0.28);
+  box-shadow: var(--fm-shadow);
+}
+
+.fm-icon-chip {
+  --fm-chip-rgb: var(--fm-primary-rgb);
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.85rem;
+  background: rgba(var(--fm-chip-rgb), 0.12);
+  color: rgb(var(--fm-chip-rgb));
+  font-size: 1.2rem;
+}
+
+.fm-icon-chip-sm {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.7rem;
+  font-size: 1.02rem;
+}
+
+.fm-icon-chip-lg {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  font-size: 1.5rem;
+}
+
+.fm-chip-violet { --fm-chip-rgb: 124, 58, 237; }
+.fm-chip-amber { --fm-chip-rgb: 217, 119, 6; }
+.fm-chip-teal { --fm-chip-rgb: 13, 148, 136; }
+.fm-chip-sky { --fm-chip-rgb: 2, 132, 199; }
+.fm-chip-rose { --fm-chip-rgb: 225, 29, 72; }
+.fm-chip-green { --fm-chip-rgb: 22, 163, 74; }
+
+[data-bs-theme="dark"] .fm-chip-violet { --fm-chip-rgb: 167, 139, 250; }
+[data-bs-theme="dark"] .fm-chip-amber { --fm-chip-rgb: 251, 191, 36; }
+[data-bs-theme="dark"] .fm-chip-teal { --fm-chip-rgb: 45, 212, 191; }
+[data-bs-theme="dark"] .fm-chip-sky { --fm-chip-rgb: 56, 189, 248; }
+[data-bs-theme="dark"] .fm-chip-rose { --fm-chip-rgb: 251, 113, 133; }
+[data-bs-theme="dark"] .fm-chip-green { --fm-chip-rgb: 74, 222, 128; }
+
+.fm-stat {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 100%;
+  padding: 1.1rem 1.2rem;
+}
+
+.fm-stat-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--fm-muted);
+}
+
+.fm-stat-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}

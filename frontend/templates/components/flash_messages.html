@@ -1,0 +1,31 @@
+{#- Komunikaty flash z serwera. Style: css/components/flash.css, JS: js/components/flash-messages.js -#}
+{% set FLASH_ICONS = {
+  "success": "bi-check-circle-fill",
+  "info": "bi-info-circle-fill",
+  "warning": "bi-exclamation-triangle-fill",
+  "danger": "bi-x-octagon-fill",
+} %}
+
+{#- Pojedynczy komunikat; dismissible=False dla statycznych przykładów. -#}
+{% macro flash(kind, message, dismissible=True) -%}
+<div class="alert fm-flash fm-flash-{{ kind }}{% if dismissible %} alert-dismissible fade show{% endif %}"{% if dismissible and kind in ["success", "info"] %} data-fm-autohide{% endif %}>
+  <i class="bi {{ FLASH_ICONS[kind] }}" aria-hidden="true"></i>
+  <div class="flex-grow-1">{{ message }}</div>
+  {%- if dismissible %}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zamknij"></button>
+  {%- endif %}
+</div>
+{%- endmacro %}
+
+{#- Wszystkie komunikaty z bieżącego żądania w stosie w prawym górnym rogu. -#}
+{% macro flash_messages() -%}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="fm-flash-stack" role="status" aria-live="polite">
+  {% for category, message in messages %}
+  {{ flash(category if category in FLASH_ICONS else "info", message) }}
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{%- endmacro %}

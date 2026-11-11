@@ -1,6 +1,6 @@
 # FlatMate – menedżer mieszkania współdzielonego
 
-Aplikacja webowa do podziału obowiązków w mieszkaniu współdzielonym: zadania domowe jednorazowe i cykliczne z rotacją osób, punkty za wykonane zadania i kalendarz. Każde mieszkanie to osobna, odizolowana grupa.
+Aplikacja webowa do podziału obowiązków w mieszkaniu współdzielonym: zadania domowe jednorazowe i cykliczne z rotacją osób, pula zadań do wzięcia i wspólny kalendarz. Każde mieszkanie to osobna, odizolowana grupa.
 
 Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Operacje (DevSecOps)**, Politechnika Śląska.
 
@@ -13,10 +13,11 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 
 ## Wybrany język i technologie
 
-- **Backend:** Python + Flask
-- **Frontend:** HTML, CSS, Bootstrap 5
-- **Baza danych:** SQLite
-- **Biblioteki:** Flask-SQLAlchemy, Flask-Login, Flask-WTF
+- **Backend:** katalog `backend/` – Python 3.13 + Flask, architektura warstwowa MVC (kontrolery, serwisy, repozytoria, modele) ([zasady](backend/README.md))
+- **Frontend:** katalog `frontend/` – szablony Jinja2 podzielone na layouty, komponenty i strony, Bootstrap 5.3, Bootstrap Icons, własny motyw z trybem jasnym i ciemnym ([zasady](frontend/README.md))
+- **Baza danych:** PostgreSQL 17 w Dockerze, migracje Alembic (Flask-Migrate)
+- **Biblioteki:** Flask-SQLAlchemy, Flask-Login, Flask-WTF, Flask-Limiter, Pillow
+- **Narzędzia:** uv (zależności), Docker Compose, GitHub Actions (pytest, Bandit, pip-audit, gitleaks)
 
 ## Krótki opis
 
@@ -32,5 +33,90 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 
 - rejestracja, logowanie i edycja profilu,
 - mieszkania z rolą admina; dołączanie przez link zaproszenia z akceptacją admina,
+- tworzenie, edycja i usuwanie zadań jednorazowych z typem, terminem i przypisaniem; przegląd z filtrami: moje, pula, wszystkie, zaległe i wykonane,
 - zadania jednorazowe i cykliczne z typami, terminami; rotacja, stała osoba lub pula „do wzięcia”,
 - kalendarz zadań mieszkania.
+
+Obecnie działają: konta i profil, mieszkania z zaproszeniami i zarządzaniem członkami oraz zadania jednorazowe. Zadania cykliczne, przejmowanie i oznaczanie zadań jako wykonane oraz kalendarz są w kolejnych etapach.
+
+## Struktura projektu
+
+- `backend/` – kod aplikacji, `frontend/` – szablony, style i skrypty,
+- `tests/` – testy (pytest),
+- `pyproject.toml` – zależności z wersjami (dokładne wersje w `uv.lock`),
+- `.env.example` – wzór konfiguracji; lokalny `.env` z sekretami tworzy `start.ps1`, a `.gitignore` wyklucza go z repozytorium,
+- `start.ps1` – uruchomienie jednym poleceniem.
+
+## Baza danych
+
+PostgreSQL z 7 tabelami (`users`, `flats`, `memberships`, `invites`, `task_types`, `tasks`, `rotation_members`) powiązanymi przez id użytkownika, np. `memberships.user_id`, `tasks.assignee_id`. Hasła są zapisywane jako hash (scrypt). Tabele tworzą migracje automatycznie przy starcie aplikacji, bez ręcznej konfiguracji. Schemat: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).
+
+## Uruchomienie
+
+Wymagania: Windows 10/11, Git, [Docker Desktop](https://docs.docker.com/get-docker/) z uruchomionym Docker Engine oraz PowerShell. Python, PostgreSQL ani `uv` nie są potrzebne do uruchomienia aplikacji.
+
+Jeśli Git i Docker Desktop nie są zainstalowane, możesz zainstalować je przez `winget`:
+
+```powershell
+winget install --id Git.Git -e
+winget install --id Docker.DockerDesktop -e
+```
+
+Po instalacji uruchom Docker Desktop i poczekaj, aż Docker Engine będzie działał.
+
+Sklonuj repozytorium, przejdź do jego katalogu i uruchom aplikację:
+
+```powershell
+git clone https://github.com/Badym/FlatMate.git
+cd FlatMate
+git switch develop
+powershell -ExecutionPolicy Bypass -File .\start.ps1
+```
+
+`-ExecutionPolicy Bypass` jest potrzebne, bo Windows domyślnie blokuje uruchamianie skryptów PowerShella; działa tylko dla tego jednego uruchomienia.
+
+Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z losowym kluczem aplikacji oraz hasłami bazy i kont demo (plik jest ignorowany przez Git). Przy kolejnych uruchomieniach zachowuje te hasła i synchronizuje hasło roli PostgreSQL z `.env`, bez usuwania danych. Migracje bazy wykonują się automatycznie. Domyślny adres aplikacji to http://localhost:8000; jeśli zmieniono `WEB_PORT`, użyj ustawionego portu.
+
+### Sprawdzenie stanu
+
+- `GET /health` — liveness aplikacji, publiczny i niezależny od bazy danych. Przykład:
+
+  ```powershell
+  Invoke-RestMethod http://localhost:8000/health
+  ```
+
+  Odpowiedź HTTP 200:
+
+  ```json
+  {"status": "ok"}
+  ```
+
+  Z kodem odpowiedzi: `curl.exe -i http://localhost:8000/health` (pierwsza linia: `HTTP/1.1 200 OK`).
+
+- `GET /ready` — gotowość aplikacji do obsługi żądań, w tym dostępność bazy. Przykład:
+
+  ```powershell
+  Invoke-RestMethod http://localhost:8000/ready
+  ```
+
+  Przy działającej bazie zwraca HTTP 200 i `{"status":"ok","database":"ok"}`. Jeśli baza jest niedostępna, zwraca HTTP 503 i `{"status":"degraded","database":"error"}`.
+
+### Dane demo i tryb deweloperski
+
+Dane demonstracyjne można utworzyć poleceniem `docker compose exec web flask --app wsgi seed-demo`. Wygenerowane hasło znajduje się w `.env` w polu `DEMO_PASSWORD`; zaloguj się np. jako `ola@flatmate.example`. Polecenie seedowania jest wyłączone w środowisku produkcyjnym.
+
+Tryb deweloperski z automatycznym przeładowaniem kodu i biblioteką komponentów pod `/_ui/`:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Porty można zmienić w `.env` (`WEB_PORT`, `POSTGRES_PORT`). Szczegółowa instrukcja instalacji Dockera, praca bez kontenera aplikacji (uv) i rozwiązywanie problemów: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
+
+Testy działają w kontenerze na osobnej bazie PostgreSQL, tak jak w CI (bez instalowania `uv`):
+
+```powershell
+docker compose --profile test run --rm --build tests
+```
+
+Szczegóły architektury i etapy prac: [docs/PLAN_IMPLEMENTACJI.md](docs/PLAN_IMPLEMENTACJI.md). Model danych: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).

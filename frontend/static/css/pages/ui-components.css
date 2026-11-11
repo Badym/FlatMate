@@ -1,0 +1,45 @@
+/* Biblioteka komponentów /_ui/ (pages/ui/components.html). */
+
+/* Biblioteka komponentów (/_ui) */
+.fm-ui-nav {
+  position: sticky;
+  top: 6rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.fm-ui-nav a {
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.55rem;
+  color: var(--fm-muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.fm-ui-nav a:hover {
+  color: var(--fm-text);
+  background: var(--fm-surface-2);
+}
+
+.fm-ui-section + .fm-ui-section {
+  margin-top: 3.5rem;
+}
+
+.fm-ui-title {
+  margin-bottom: 1.25rem;
+  font-size: 1.3rem;
+}
+
+.fm-swatch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+.fm-swatch code {
+  color: var(--fm-muted);
+  background: none;
+  padding: 0;
+}

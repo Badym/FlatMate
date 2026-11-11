@@ -1,0 +1,18 @@
+{#-
+  Stopka. Style: css/components/footer.css
+  Import z kontekstem (korzysta z current_year): {% from "components/footer.html" import footer with context %}
+-#}
+{% macro footer() -%}
+<footer class="fm-footer">
+  <div class="container d-flex flex-column flex-md-row gap-3 justify-content-between align-items-md-center">
+    <div class="d-flex align-items-center gap-2">
+      <span class="fm-logo fm-logo-sm" aria-hidden="true"><i class="bi bi-house-heart-fill"></i></span>
+      <span><strong class="text-body">FlatMate</strong> · projekt DevSecOps, Politechnika Śląska</span>
+    </div>
+    <div class="d-flex align-items-center gap-4">
+      <a href="https://github.com/Badym/FlatMate" target="_blank" rel="noopener noreferrer"><i class="bi bi-github me-1" aria-hidden="true"></i>GitHub</a>
+      <span>&copy; {{ current_year }}</span>
+    </div>
+  </div>
+</footer>
+{%- endmacro %}

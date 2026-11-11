@@ -1,0 +1,17 @@
+/* Stopka (components/footer.html). */
+
+.fm-footer {
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--fm-border);
+  color: var(--fm-muted);
+  font-size: 0.9rem;
+}
+
+.fm-footer a {
+  color: var(--fm-muted);
+  text-decoration: none;
+}
+
+.fm-footer a:hover {
+  color: var(--fm-text);
+}

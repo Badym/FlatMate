@@ -1,0 +1,10 @@
+{#- Kafelek z liczbą (np. na pulpicie mieszkania). chip: klasa koloru ikony, np. fm-chip-amber. Style: css/components/card.css -#}
+{% macro stat_card(icon, label, value, chip="") -%}
+<div class="fm-card fm-stat">
+  <span class="fm-icon-chip{{ ' ' ~ chip if chip }}"><i class="bi {{ icon }}" aria-hidden="true"></i></span>
+  <div>
+    <div class="fm-stat-label">{{ label }}</div>
+    <div class="fm-stat-value">{{ value }}</div>
+  </div>
+</div>
+{%- endmacro %}

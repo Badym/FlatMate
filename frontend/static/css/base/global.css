@@ -1,0 +1,46 @@
+/* Style globalne: typografia, linki, zaznaczenie, link „przejdź do treści”. */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+::selection {
+  background: rgba(var(--fm-primary-rgb), 0.22);
+}
+
+a {
+  text-underline-offset: 0.2em;
+}
+
+code {
+  color: var(--fm-primary-strong);
+  background: rgba(var(--fm-primary-rgb), 0.1);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.35rem;
+  font-size: 0.85em;
+}
+
+.fm-skip-link:focus {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2000;
+  padding: 0.6rem 1rem;
+  border-radius: var(--fm-radius-sm);
+  background: var(--fm-surface);
+  box-shadow: var(--fm-shadow);
+}

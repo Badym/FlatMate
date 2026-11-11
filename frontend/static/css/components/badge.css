@@ -1,0 +1,28 @@
+/* Odznaki statusów i trybów (components/badge.html). */
+
+.fm-badge {
+  --fm-badge-rgb: 100, 116, 139;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.26rem 0.62rem;
+  border-radius: 999px;
+  background: rgba(var(--fm-badge-rgb), 0.12);
+  color: rgb(var(--fm-badge-rgb));
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+[data-bs-theme="dark"] .fm-badge {
+  background: rgba(var(--fm-badge-rgb), 0.2);
+  color: color-mix(in srgb, rgb(var(--fm-badge-rgb)) 55%, #fff);
+}
+
+.fm-badge-primary { --fm-badge-rgb: 79, 70, 229; }
+.fm-badge-violet { --fm-badge-rgb: 124, 58, 237; }
+.fm-badge-success { --fm-badge-rgb: 22, 163, 74; }
+.fm-badge-warning { --fm-badge-rgb: 217, 119, 6; }
+.fm-badge-danger { --fm-badge-rgb: 220, 38, 38; }
+.fm-badge-info { --fm-badge-rgb: 2, 132, 199; }

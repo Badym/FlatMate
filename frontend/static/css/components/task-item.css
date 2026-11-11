@@ -1,0 +1,63 @@
+/* Wiersz zadania (components/task_item.html). */
+
+.fm-task {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: var(--fm-radius-sm);
+  background: var(--fm-surface);
+  border: 1px solid var(--fm-border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fm-task + .fm-task {
+  margin-top: 0.55rem;
+}
+
+.fm-task:hover {
+  border-color: rgba(var(--fm-primary-rgb), 0.3);
+  box-shadow: var(--fm-shadow-sm);
+}
+
+.fm-task-overdue {
+  box-shadow: inset 3px 0 0 #dc2626;
+}
+
+.fm-task-overdue:hover {
+  box-shadow: inset 3px 0 0 #dc2626, var(--fm-shadow-sm);
+}
+
+.fm-task-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-task-title {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fm-task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.8rem;
+  margin-top: 0.15rem;
+  color: var(--fm-muted);
+  font-size: 0.79rem;
+}
+
+.fm-task-meta .bi {
+  margin-right: 0.25rem;
+}
+
+.fm-task-done .fm-task-title {
+  color: var(--fm-muted);
+  text-decoration: line-through;
+}
+
+.fm-task-done .fm-icon-chip {
+  --fm-chip-rgb: 22, 163, 74;
+}

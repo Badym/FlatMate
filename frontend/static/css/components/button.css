@@ -1,0 +1,151 @@
+/* Przyciski i kontrolka segmentowa. */
+
+.btn {
+  --bs-btn-font-weight: 600;
+  --bs-btn-padding-x: 1rem;
+  --bs-btn-padding-y: 0.55rem;
+  --bs-btn-border-radius: 0.7rem;
+  --bs-btn-focus-box-shadow: var(--fm-ring);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease,
+    color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+}
+
+.btn-lg {
+  --bs-btn-padding-x: 1.4rem;
+  --bs-btn-padding-y: 0.8rem;
+  --bs-btn-font-size: 1.02rem;
+  --bs-btn-border-radius: 0.85rem;
+}
+
+.btn-sm {
+  --bs-btn-padding-x: 0.7rem;
+  --bs-btn-padding-y: 0.35rem;
+  --bs-btn-font-size: 0.82rem;
+  --bs-btn-border-radius: 0.55rem;
+}
+
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #4f46e5;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #4338ca;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #3730a3;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #4f46e5;
+  --bs-btn-disabled-border-color: transparent;
+  background-image: var(--fm-gradient);
+  box-shadow: var(--fm-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.07) saturate(1.05);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-soft {
+  --bs-btn-color: var(--fm-primary);
+  --bs-btn-bg: rgba(var(--fm-primary-rgb), 0.1);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--fm-primary-hover);
+  --bs-btn-hover-bg: rgba(var(--fm-primary-rgb), 0.17);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--fm-primary-hover);
+  --bs-btn-active-bg: rgba(var(--fm-primary-rgb), 0.24);
+  --bs-btn-active-border-color: transparent;
+}
+
+.btn-neutral {
+  --bs-btn-color: var(--fm-text);
+  --bs-btn-bg: var(--fm-surface);
+  --bs-btn-border-color: var(--fm-border);
+  --bs-btn-hover-color: var(--fm-text);
+  --bs-btn-hover-bg: var(--fm-surface-2);
+  --bs-btn-hover-border-color: var(--fm-border);
+  --bs-btn-active-color: var(--fm-text);
+  --bs-btn-active-bg: var(--fm-surface-2);
+  --bs-btn-active-border-color: var(--fm-border);
+  box-shadow: var(--fm-shadow-sm);
+}
+
+.btn-ghost {
+  --bs-btn-color: var(--fm-muted);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--fm-text);
+  --bs-btn-hover-bg: var(--fm-surface-2);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--fm-text);
+  --bs-btn-active-bg: var(--fm-surface-2);
+  --bs-btn-active-border-color: transparent;
+}
+
+.btn-soft-danger {
+  --bs-btn-color: #dc2626;
+  --bs-btn-bg: rgba(220, 38, 38, 0.1);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #b91c1c;
+  --bs-btn-hover-bg: rgba(220, 38, 38, 0.17);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #b91c1c;
+  --bs-btn-active-bg: rgba(220, 38, 38, 0.24);
+  --bs-btn-active-border-color: transparent;
+}
+
+[data-bs-theme="dark"] .btn-soft-danger {
+  --bs-btn-color: #f87171;
+  --bs-btn-hover-color: #fca5a5;
+  --bs-btn-active-color: #fca5a5;
+}
+
+.btn-icon {
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.05rem;
+}
+
+.btn-icon.btn-sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.9rem;
+}
+
+/* Kontrolka segmentowa (filtry list) */
+.fm-segmented {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 0.8rem;
+  background: var(--fm-surface-2);
+}
+
+.fm-segmented .btn {
+  --bs-btn-padding-x: 0.8rem;
+  --bs-btn-padding-y: 0.3rem;
+  --bs-btn-font-size: 0.84rem;
+  --bs-btn-color: var(--fm-muted);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--fm-text);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-border-radius: 0.6rem;
+}
+
+.fm-segmented .btn.active {
+  color: var(--fm-text);
+  background: var(--fm-surface);
+  border-color: transparent;
+  box-shadow: var(--fm-shadow-sm);
+}

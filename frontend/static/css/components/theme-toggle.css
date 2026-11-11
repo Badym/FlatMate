@@ -1,0 +1,10 @@
+/* Przełącznik motywu (components/theme_toggle.html). */
+
+.fm-theme-toggle .bi-sun,
+[data-bs-theme="dark"] .fm-theme-toggle .bi-moon-stars {
+  display: none;
+}
+
+[data-bs-theme="dark"] .fm-theme-toggle .bi-sun {
+  display: inline-block;
+}

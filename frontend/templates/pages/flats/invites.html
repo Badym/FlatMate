@@ -1,0 +1,63 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Zaproszenia · {{ flat.name }} · FlatMate{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <a class="btn btn-ghost mb-3" href="{{ url_for('flats.detail', flat_id=flat.id) }}">
+    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ flat.name }}
+  </a>
+  <header class="fm-page-header">
+    <div>
+      <span class="fm-eyebrow">Administrator mieszkania</span>
+      <h1 class="fm-page-title">Zaproszenia</h1>
+    </div>
+  </header>
+
+  <section class="fm-card p-4 mb-4">
+    <h2 class="h5 fw-bold">Utwórz link</h2>
+    <p class="text-body-secondary">Link działa przez 7 dni. Osoba, która go otworzy, poprosi o dołączenie, a Ty zdecydujesz o akceptacji.</p>
+    <form method="post">
+      {{ form.csrf_token }}
+      <button class="btn btn-primary" type="submit">Utwórz zaproszenie</button>
+    </form>
+    {% if new_invite_url %}
+    <div class="alert alert-success mt-3 mb-0" role="status">
+      <p class="fw-semibold mb-1">Skopiuj link i przekaż go współlokatorowi:</p>
+      <a class="text-break" href="{{ new_invite_url }}">{{ request.host_url.rstrip("/") }}{{ new_invite_url }}</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="fm-card p-4">
+    <h2 class="h5 fw-bold mb-3">Wcześniejsze zaproszenia</h2>
+    {% if invites %}
+    <ul class="list-unstyled d-grid gap-3 mb-0">
+      {% for invite in invites %}
+      <li class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom pb-3">
+        <div>
+          <div class="fw-semibold">Utworzono {{ invite.created_at.strftime("%Y-%m-%d %H:%M") }} UTC</div>
+          <div class="small text-body-secondary">Ważne do {{ invite.expires_at.strftime("%Y-%m-%d %H:%M") }} UTC</div>
+          {% if invite.revoked %}
+          <span class="badge text-bg-secondary">unieważnione</span>
+          {% elif invite.is_usable() %}
+          <span class="badge text-bg-success">aktywne</span>
+          {% else %}
+          <span class="badge text-bg-secondary">wygasłe</span>
+          {% endif %}
+        </div>
+        {% if not invite.revoked and invite.is_usable() %}
+        <form method="post" action="{{ url_for('flats.revoke_invite', flat_id=flat.id, invite_id=invite.id) }}">
+          {{ revoke_form.csrf_token }}
+          <button class="btn btn-sm btn-outline-danger" type="submit">Unieważnij</button>
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-body-secondary mb-0">Nie utworzono jeszcze zaproszeń.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+/* Klasy pomocnicze (zamiast atrybutów style, CSP: style-src 'self'). */
+
+.text-gradient {
+  background: var(--fm-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

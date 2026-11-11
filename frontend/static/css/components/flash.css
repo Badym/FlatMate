@@ -1,0 +1,44 @@
+/* Komunikaty flash (components/flash_messages.html). */
+
+.fm-flash-stack {
+  position: fixed;
+  top: 5rem;
+  right: 1rem;
+  z-index: 1080;
+  display: grid;
+  gap: 0.6rem;
+  width: min(25rem, calc(100vw - 2rem));
+}
+
+.fm-flash {
+  --fm-flash-rgb: var(--fm-primary-rgb);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.9rem 3rem 0.9rem 1rem;
+  color: var(--fm-text);
+  background: var(--fm-surface);
+  border: 1px solid var(--fm-border);
+  border-radius: var(--fm-radius-sm);
+  box-shadow: var(--fm-shadow);
+  animation: fm-slide-in 0.3s ease both;
+}
+
+.fm-flash-stack .fm-flash {
+  box-shadow: var(--fm-shadow-lg);
+}
+
+.fm-flash > .bi {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: rgb(var(--fm-flash-rgb));
+}
+
+.fm-flash .btn-close {
+  padding: 1.05rem 1rem;
+}
+
+.fm-flash-success { --fm-flash-rgb: 22, 163, 74; }
+.fm-flash-warning { --fm-flash-rgb: 217, 119, 6; }
+.fm-flash-danger { --fm-flash-rgb: 220, 38, 38; }

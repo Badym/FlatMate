@@ -1,0 +1,31 @@
+{#- Odznaki statusu i trybu przypisania zadania. Style: css/components/badge.css -#}
+{% set STATUS_BADGES = {
+  "today": ("warning", "bi-sun", "Dziś"),
+  "overdue": ("danger", "bi-exclamation-circle", "Zaległe"),
+  "pool": ("info", "bi-inboxes", "Do wzięcia"),
+  "upcoming": ("neutral", "bi-calendar3", "Zaplanowane"),
+  "done": ("success", "bi-check2-circle", "Wykonane"),
+} %}
+
+{% set MODE_LABELS = {
+  "rotation": ("bi-arrow-repeat", "Rotacja"),
+  "fixed": ("bi-pin-angle", "Stała osoba"),
+  "pool": ("bi-people", "Pula"),
+} %}
+
+{#- Ogólna odznaka; variant: "" (szara) | primary | violet | success | warning | danger | info -#}
+{% macro badge(label, icon=None, variant="") -%}
+<span class="fm-badge{{ ' fm-badge-' ~ variant if variant }}">
+  {%- if icon %}<i class="bi {{ icon }}" aria-hidden="true"></i>{% endif %}{{ label -}}
+</span>
+{%- endmacro %}
+
+{% macro status_badge(status) -%}
+{%- set variant, icon, label = STATUS_BADGES[status] -%}
+{{ badge(label, icon, "" if variant == "neutral" else variant) }}
+{%- endmacro %}
+
+{% macro mode_badge(mode) -%}
+{%- set icon, label = MODE_LABELS[mode] -%}
+{{ badge(label, icon) }}
+{%- endmacro %}

@@ -1,0 +1,16 @@
+/* Moje mieszkania (pages/flats/index.html). */
+
+.fm-flat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 12rem;
+  padding: 1.5rem;
+}
+
+.fm-flat-name {
+  margin: 1.1rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
