@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
+from sqlalchemy.exc import IntegrityError
+
 from backend.audit import audit_event
 from backend.core.extensions import db
 from backend.core.constants import INVITE_VALIDITY_DAYS
@@ -95,8 +97,11 @@ class FlatService:
             )
         return summaries
 
-    def list_members(self, flat_id: int) -> list[Membership]:
-        return self._memberships.list_for_flat(flat_id)
+    def list_members(self, flat_id: int, *, include_requests: bool = False) -> list[Membership]:
+        """Aktywni członkowie; z ``include_requests`` także prośby oczekujące i odrzucone (tylko dla admina)."""
+        if include_requests:
+            return self._memberships.list_for_flat(flat_id)
+        return self._memberships.list_active(flat_id)
 
     def create(self, name: str, user_id: int) -> Flat:
         user = self._users.get(user_id)
@@ -155,19 +160,28 @@ class FlatService:
         invite = self._get_usable_invite(token)
         if invite is None:
             raise InviteUnavailable
-        existing = self._memberships.get_for_user(invite.flat_id, user_id)
+        flat_id = invite.flat_id
+        existing = self._memberships.get_for_user(flat_id, user_id)
         if existing is not None:
             return existing.status
         self._memberships.add(
             Membership(
-                flat_id=invite.flat_id,
+                flat_id=flat_id,
                 user_id=user_id,
                 role=MemberRole.MEMBER,
                 status=MembershipStatus.PENDING,
             )
         )
-        db.session.commit()
-        audit_event("membership_requested", flat_id=invite.flat_id)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # Równoległe żądanie tej samej osoby (np. podwójne kliknięcie) zapisało prośbę pierwsze.
+            db.session.rollback()
+            existing = self._memberships.get_for_user(flat_id, user_id)
+            if existing is None:
+                raise
+            return existing.status
+        audit_event("membership_requested", flat_id=flat_id)
         return MembershipStatus.PENDING
 
     def approve_member(self, flat_id: int, membership_id: int, admin_id: int) -> None:

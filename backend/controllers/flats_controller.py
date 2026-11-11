@@ -86,7 +86,7 @@ def members(flat_id: int) -> str:
     return render_template(
         "pages/flats/members.html",
         flat=g.flat,
-        memberships=FlatService().list_members(flat_id),
+        memberships=FlatService().list_members(flat_id, include_requests=g.membership.is_admin),
         membership=g.membership,
         action_form=EmptyActionForm(),
     )

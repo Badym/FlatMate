@@ -77,18 +77,6 @@ git switch develop
 
 Repozytorium trafi do folderu `Dokumenty\FlatMate`. Gałąź `main` zawiera wersje oddane po kolejnych etapach, a `develop` bieżącą wersję zespołu.
 
-Sprawdź, czy na tej gałęzi jest już logowanie i konta demo:
-
-```powershell
-Test-Path backend\cli.py
-```
-
-Jeśli wynik to `False`, ta gałąź ma jeszcze tylko szkielet aplikacji. Przełącz się wtedy na gałąź z najnowszym kodem (listę pokazuje `git branch -r`), na przykład:
-
-```powershell
-git switch feat/etap-3-fundament
-```
-
 Wszystkie dalsze polecenia wpisujesz w folderze `FlatMate`. Jeśli zamkniesz okno, po ponownym otwarciu PowerShella wpisz najpierw `cd $HOME\Documents\FlatMate`.
 
 ---
@@ -98,8 +86,10 @@ Wszystkie dalsze polecenia wpisujesz w folderze `FlatMate`. Jeśli zamkniesz okn
 Uruchom PowerShell w katalogu repozytorium i wpisz:
 
 ```powershell
-.\start.ps1
+powershell -ExecutionPolicy Bypass -File .\start.ps1
 ```
+
+Windows domyślnie blokuje uruchamianie skryptów PowerShella. `-ExecutionPolicy Bypass` zdejmuje tę blokadę tylko dla tego jednego uruchomienia, bez zmiany ustawień systemu.
 
 Przy pierwszym uruchomieniu skrypt kopiuje ustawienia z `.env.example`, generuje bezpieczne losowe wartości `SECRET_KEY`, `POSTGRES_PASSWORD` i `DEMO_PASSWORD`, zapisuje je w ignorowanym przez Git pliku `.env`, a następnie uruchamia aplikację i bazę przez Docker Compose. Niczego nie musisz ręcznie uzupełniać. Przy kolejnych startach skrypt zachowuje hasła z `.env` i synchronizuje hasło użytkownika PostgreSQL z ustawieniem, bez kasowania danych.
 
@@ -194,10 +184,10 @@ Tworzenie i zarządzanie mieszkaniami, zaproszenia oraz tworzenie, edycja, usuwa
 
 | Chcesz | Polecenie |
 | --- | --- |
-| zatrzymać aplikację | w oknie z serwerem naciśnij **Ctrl+C** albo w drugim oknie wpisz `docker compose down` |
-| uruchomić ją ponownie | `docker compose up` |
-| uruchomić w tle, bez zajmowania okna | `docker compose up -d`, a logi zobaczysz przez `docker compose logs -f web` |
-| pobrać najnowszy kod i uruchomić | `git pull`, potem `docker compose up --build` |
+| zatrzymać aplikację | `docker compose down` |
+| uruchomić ją ponownie | `docker compose up -d` |
+| zobaczyć logi aplikacji | `docker compose logs -f web` (wyjście: **Ctrl+C**, aplikacja działa dalej) |
+| pobrać najnowszy kod i uruchomić | `git pull`, potem `powershell -ExecutionPolicy Bypass -File .\start.ps1` (buduje obraz od nowa) |
 | odtworzyć dane demo od nowa | `docker compose exec web flask --app wsgi seed-demo --reset` |
 | usunąć **wszystkie** dane (bazę i zdjęcia) | `docker compose down -v` |
 
@@ -219,7 +209,16 @@ Testy na osobnej, tymczasowej bazie PostgreSQL, tak jak w CI:
 docker compose --profile test run --rm --build tests
 ```
 
-Praca bez kontenera aplikacji (wymaga [uv](https://docs.astral.sh/uv/): `winget install --id astral-sh.uv -e`) jest opisana w sekcji „Uruchomienie” w [README](../README.md).
+Praca bez kontenera aplikacji, np. przy zmianach w kodzie. Wymaga [uv](https://docs.astral.sh/uv/) (`winget install --id astral-sh.uv -e`); baza dalej działa w Dockerze:
+
+```powershell
+uv sync
+docker compose up -d db
+uv run flask --app wsgi db upgrade
+uv run flask --app wsgi run --debug --port 5000
+```
+
+Aplikacja łączy się z bazą przez `DATABASE_URL` z `.env`. Jeśli zmienisz `POSTGRES_PORT`, popraw też port w tym adresie. Testy lokalnie: `docker compose up -d db-test`, potem `uv run pytest`. Zmiana modeli wymaga migracji w tym samym PR: `uv run flask --app wsgi db migrate -m "opis zmiany"`.
 
 ---
 
@@ -228,11 +227,12 @@ Praca bez kontenera aplikacji (wymaga [uv](https://docs.astral.sh/uv/): `winget 
 | Objaw | Przyczyna i rozwiązanie |
 | --- | --- |
 | `error during connect` albo `Cannot connect to the Docker daemon` | Docker Desktop nie działa. Uruchom go i poczekaj na **Engine running**. |
-| `Ustaw SECRET_KEY w pliku .env` albo `Ustaw POSTGRES_PASSWORD w pliku .env` | Uruchom aplikację przez `.\start.ps1`, aby wygenerować brakujący `.env`. Jeśli plik już istnieje, sprawdź poleceniem `Get-ChildItem -Force .env*`, czy nazywa się dokładnie `.env`, a nie `.env.txt`, i czy zawiera wymagane wartości. |
+| `uruchamianie skryptów jest wyłączone w tym systemie` (`running scripts is disabled on this system`) | Uruchom skrypt poleceniem z etapu 3: `powershell -ExecutionPolicy Bypass -File .\start.ps1`. |
+| `Ustaw SECRET_KEY w pliku .env` albo `Ustaw POSTGRES_PASSWORD w pliku .env` | Uruchom skrypt z etapu 3, aby wygenerować brakujący `.env`. Jeśli plik już istnieje, sprawdź poleceniem `Get-ChildItem -Force .env*`, czy nazywa się dokładnie `.env`, a nie `.env.txt`, i czy zawiera wymagane wartości. |
 | `port is already allocated` albo `Bind for 127.0.0.1:8000 failed` | Port zajęty przez inny program. W `.env` zmień `WEB_PORT=8000` na np. `8001` (a przy błędzie z portem 5432 `POSTGRES_PORT=5432` na `5433`) i otwórz http://localhost:8001. |
-| `password authentication failed for user "flatmate"` | Uruchom `.\start.ps1`. Skrypt synchronizuje hasło użytkownika PostgreSQL z `.env` bez usuwania danych. Jeśli nie może tego zrobić, sprawdź, czy `POSTGRES_USER` w `.env` odpowiada administratorowi istniejącej bazy. |
+| `password authentication failed for user "flatmate"` | Uruchom ponownie skrypt z etapu 3. Skrypt synchronizuje hasło użytkownika PostgreSQL z `.env` bez usuwania danych. Jeśli nie może tego zrobić, sprawdź, czy `POSTGRES_USER` w `.env` odpowiada administratorowi istniejącej bazy. |
 | `Ustaw DEMO_PASSWORD (co najmniej 12 znaków)` | Ustaw niepuste `DEMO_PASSWORD` w `.env`, wpisz `docker compose up -d web`, a następnie powtórz `seed-demo`. |
 | `Dane demo już istnieją` | Konta demo już są, możesz się logować. Żeby utworzyć je od nowa, dodaj `--reset`. |
-| `service "web" is not running` przy `seed-demo` | Aplikacja nie działa. Uruchom ją (etap 4) i dopiero potem `seed-demo`. |
-| Strona http://localhost:8000 się nie otwiera | Sprawdź, czy w oknie z serwerem jest linia `Listening at`. Spróbuj adresu http://127.0.0.1:8000. |
+| `service "web" is not running` przy `seed-demo` | Aplikacja nie działa. Uruchom ją (etap 3) i dopiero potem `seed-demo`. |
+| Strona http://localhost:8000 się nie otwiera | Sprawdź w `docker compose logs web`, czy jest linia `Listening at`, i czy `WEB_PORT` w `.env` to 8000. Spróbuj adresu http://127.0.0.1:8000. |
 | „Nieprawidłowy e-mail lub hasło” przy koncie demo | Hasło to wartość `DEMO_PASSWORD` z `.env` z chwili uruchomienia `seed-demo`. Po zmianie hasła w `.env` wpisz `docker compose up -d`, a potem `seed-demo --reset`. Po 10 nieudanych próbach konto blokuje się na 15 minut. |

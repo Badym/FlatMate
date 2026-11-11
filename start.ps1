@@ -76,12 +76,10 @@ try {
     if ([string]::IsNullOrWhiteSpace($demoPassword)) {
         $demoPassword = New-RandomHex 24
         $environment = Set-EnvValue $environment "DEMO_PASSWORD" $demoPassword
+        $encoding = [System.Text.UTF8Encoding]::new($false)
+        [System.IO.File]::WriteAllText($envPath, $environment, $encoding)
         $generatedDemoPassword = $true
     }
-
-    $environment = [regex]::Replace($environment, "(?m)^POSTGRES_TEST_PORT=[^\r\n]*(?:\r?\n|$)", "")
-    $encoding = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllText($envPath, $environment, $encoding)
 
     if ($generatedDemoPassword) {
         Write-Host "A demo password was generated and saved to .env as DEMO_PASSWORD."
