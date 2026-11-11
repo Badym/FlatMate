@@ -37,6 +37,20 @@ Projekt realizowany w ramach przedmiotu **Projektowanie, Bezpieczeństwo i Opera
 - zadania jednorazowe i cykliczne z typami, terminami; rotacja, stała osoba lub pula „do wzięcia”,
 - kalendarz zadań mieszkania.
 
+Obecnie działają: konta i profil, mieszkania z zaproszeniami i zarządzaniem członkami oraz zadania jednorazowe. Zadania cykliczne, przejmowanie i oznaczanie zadań jako wykonane oraz kalendarz są w kolejnych etapach.
+
+## Struktura projektu
+
+- `backend/` – kod aplikacji, `frontend/` – szablony, style i skrypty,
+- `tests/` – testy (pytest),
+- `pyproject.toml` – zależności z wersjami (dokładne wersje w `uv.lock`),
+- `.env.example` – wzór konfiguracji; lokalny `.env` z sekretami tworzy `start.ps1`, a `.gitignore` wyklucza go z repozytorium,
+- `start.ps1` – uruchomienie jednym poleceniem.
+
+## Baza danych
+
+PostgreSQL z 7 tabelami (`users`, `flats`, `memberships`, `invites`, `task_types`, `tasks`, `rotation_members`) powiązanymi przez id użytkownika, np. `memberships.user_id`, `tasks.assignee_id`. Hasła są zapisywane jako hash (scrypt). Tabele tworzą migracje automatycznie przy starcie aplikacji, bez ręcznej konfiguracji. Schemat: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).
+
 ## Uruchomienie
 
 Wymagania: Windows 10/11, Git, [Docker Desktop](https://docs.docker.com/get-docker/) z uruchomionym Docker Engine oraz PowerShell. Python, PostgreSQL ani `uv` nie są potrzebne do uruchomienia aplikacji.
@@ -76,6 +90,8 @@ Przy pierwszym uruchomieniu skrypt tworzy z `.env.example` lokalny plik `.env` z
   ```json
   {"status": "ok"}
   ```
+
+  Z kodem odpowiedzi: `curl.exe -i http://localhost:8000/health` (pierwsza linia: `HTTP/1.1 200 OK`).
 
 - `GET /ready` — gotowość aplikacji do obsługi żądań, w tym dostępność bazy. Przykład:
 
