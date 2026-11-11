@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------
 # Etap bazowy: zależności produkcyjne z uv.lock (powtarzalne wersje, T-12)
 # ---------------------------------------------------------------------------
-FROM python:3.13-slim AS base
+FROM python:3.15-slim AS base
 
 COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /bin/uv
 
