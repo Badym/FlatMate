@@ -23,6 +23,7 @@ dependencies = [
 dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
+    "pytest-randomly>=5.1.0",
     "bandit>=1.9.4",
     "pip-audit>=2.10.1",
 ]
@@ -35,6 +36,13 @@ package = false
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
+# Kategorie testów; test bez żadnej z pozostałych kategorii jest jednostkowy (tests/conftest.py).
+markers = [
+    "unit: test jednostkowy, sprawdza jedną funkcję aplikacji",
+    "integration: scenariusz kilku funkcji razem, przez HTTP jak użytkownik",
+    "security: scenariusz bezpieczeństwa (dostęp, hasła, sesje, CSRF, XSS, pliki)",
+    "endpoint: test endpointów /health i /ready",
+]
 
 [tool.coverage.run]
 source = ["backend"]

@@ -13,6 +13,8 @@ from backend.models import MembershipStatus
 from backend.security.access import flat_admin_required, flat_member_required
 from backend.security.session import load_user
 
+pytestmark = pytest.mark.security
+
 
 @pytest.fixture
 def protected_app(app: Flask) -> Flask:

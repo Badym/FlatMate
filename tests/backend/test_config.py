@@ -34,6 +34,7 @@ def test_unknown_environment_is_rejected() -> None:
 
 
 @pytest.mark.parametrize("missing", ["SECRET_KEY", "DATABASE_URL"])
+@pytest.mark.security
 def test_production_requires_secrets(monkeypatch: pytest.MonkeyPatch, missing: str) -> None:
     values = {"SECRET_KEY": VALID_SECRET, "DATABASE_URL": DATABASE_URL}
     values.pop(missing)
@@ -44,6 +45,7 @@ def test_production_requires_secrets(monkeypatch: pytest.MonkeyPatch, missing: s
         ProductionConfig()
 
 
+@pytest.mark.security
 def test_production_rejects_short_secret_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SECRET_KEY", "too-short")
     monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
@@ -52,6 +54,7 @@ def test_production_rejects_short_secret_key(monkeypatch: pytest.MonkeyPatch) ->
         ProductionConfig()
 
 
+@pytest.mark.security
 def test_production_is_secure_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SECRET_KEY", VALID_SECRET)
     monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
@@ -93,6 +96,7 @@ def test_testing_requires_test_database(monkeypatch: pytest.MonkeyPatch) -> None
         config_module.TestingConfig()
 
 
+@pytest.mark.security
 def test_production_session_cookie_uses_host_prefix(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SECRET_KEY", VALID_SECRET)
     monkeypatch.setenv("DATABASE_URL", DATABASE_URL)

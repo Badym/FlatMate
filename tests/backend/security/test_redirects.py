@@ -4,6 +4,8 @@ import pytest
 
 from backend.security.redirects import is_safe_next
 
+pytestmark = pytest.mark.security
+
 
 @pytest.mark.parametrize("target", ["/", "/flats", "/profile?tab=haslo", "/flats/1#zadania"])
 def test_accepts_paths_inside_application(target: str) -> None:

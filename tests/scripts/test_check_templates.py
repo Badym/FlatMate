@@ -36,6 +36,7 @@ def test_project_templates_are_clean() -> None:
         '<a href="javascript:void(0)">x</a>',
     ],
 )
+@pytest.mark.security
 def test_detects_unsafe_template_constructs(tmp_path: Path, snippet: str) -> None:
     root = _project_with_template(tmp_path, snippet)
 

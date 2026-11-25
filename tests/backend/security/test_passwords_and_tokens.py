@@ -8,6 +8,8 @@ from backend.core.constants import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH
 from backend.security.passwords import PasswordPolicyError, hash_password, verify_password
 from backend.security.tokens import hash_token, new_invite_token, new_session_token
 
+pytestmark = pytest.mark.security
+
 PASSWORD = "a" * PASSWORD_MIN_LENGTH
 
 
