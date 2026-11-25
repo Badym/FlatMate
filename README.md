@@ -113,10 +113,29 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 Porty można zmienić w `.env` (`WEB_PORT`, `POSTGRES_PORT`). Szczegółowa instrukcja instalacji Dockera, praca bez kontenera aplikacji (uv) i rozwiązywanie problemów: [docs/URUCHOMIENIE.md](docs/URUCHOMIENIE.md).
 
-Testy działają w kontenerze na osobnej bazie PostgreSQL, tak jak w CI (bez instalowania `uv`):
+Szczegóły architektury i etapy prac: [docs/PLAN_IMPLEMENTACJI.md](docs/PLAN_IMPLEMENTACJI.md). Model danych: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).
+
+## Testy
+
+Narzędzie: **pytest**, z pytest-cov (pokrycie kodu) i pytest-randomly (losowa kolejność testów). Testy są w katalogu `tests/` i działają w kontenerze na osobnej, tymczasowej bazie PostgreSQL. Nie korzystają z bazy aplikacji, zewnętrznych usług ani plików z komputera. Każdy test tworzy własne dane, a kolejność jest losowana przy każdym uruchomieniu.
+
+Wszystkie testy jednym poleceniem (potrzebny tylko Docker):
 
 ```powershell
 docker compose --profile test run --rm --build tests
 ```
 
-Szczegóły architektury i etapy prac: [docs/PLAN_IMPLEMENTACJI.md](docs/PLAN_IMPLEMENTACJI.md). Model danych: [docs/diagram_bazy_danych.md](docs/diagram_bazy_danych.md).
+Jedna kategoria, np. testy bezpieczeństwa:
+
+```powershell
+docker compose --profile test run --rm --build tests pytest -m security -v
+```
+
+| Kategoria | Marker | Testów | Zakres |
+| --- | --- | --- | --- |
+| Jednostkowe | `unit` | 214 | pojedyncze funkcje: rejestracja, logowanie, profil i awatar, mieszkania i zaproszenia, zadania i filtry, modele, repozytoria, konfiguracja |
+| Integracyjne | `integration` | 5 | scenariusze użytkownika w `tests/integration/`: konto i profil, zmiana hasła, dołączenie przez zaproszenie, zadanie od dodania do usunięcia, przekazanie mieszkania |
+| Bezpieczeństwa | `security` | 105 | cudze mieszkania i zadania, za krótkie hasło, blokada konta i limity prób, sesje, CSRF, XSS, nagłówki, przekierowania, złośliwe pliki |
+| Endpoint | `endpoint` | 4 | `/health` zwraca 200 i `{"status": "ok"}`, `/ready` sprawdza bazę |
+
+Wynik zawiera pokrycie kodu (wymagane minimum 80%). Te same testy uruchamia CI przy każdym pull requeście.

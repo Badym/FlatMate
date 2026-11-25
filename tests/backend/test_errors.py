@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from flask.testing import FlaskClient
 
 
@@ -35,6 +36,7 @@ def test_request_too_large(make_app) -> None:
     assert "Za duży plik" in response.get_data(as_text=True)
 
 
+@pytest.mark.security
 def test_unhandled_exception_shows_generic_page(make_app) -> None:
     application = make_app(PROPAGATE_EXCEPTIONS=False)
 
@@ -50,6 +52,7 @@ def test_unhandled_exception_shows_generic_page(make_app) -> None:
     assert "tajny szczegół błędu" not in html
 
 
+@pytest.mark.security
 def test_missing_csrf_token_is_rejected(make_app) -> None:
     client = make_app(WTF_CSRF_ENABLED=True).test_client()
 

@@ -22,6 +22,7 @@ from backend.services.auth_service import (
 NEW_PASSWORD = "inne-dlugie-haslo-77"  # gitleaks:allow (wymyślone hasło testowe)
 
 
+@pytest.mark.security
 class TestAuthenticate:
     def test_unknown_account_still_checks_a_password_hash(self, app_ctx, monkeypatch) -> None:
         calls = []

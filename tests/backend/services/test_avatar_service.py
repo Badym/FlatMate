@@ -44,6 +44,7 @@ class TestProcessImage:
 
         assert _decode(content).mode == "RGBA"
 
+    @pytest.mark.security
     def test_strips_exif_metadata(self, image_bytes) -> None:
         exif = Image.Exif()
         exif[0x010F] = "Aparat"  # Make
@@ -79,6 +80,7 @@ class TestProcessImage:
         with pytest.raises(InvalidAvatarError):
             process_image(BytesIO(data[: len(data) // 2]))
 
+    @pytest.mark.security
     def test_rejects_decompression_bomb(self, image_bytes, monkeypatch) -> None:
         monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 100)
 
@@ -112,6 +114,7 @@ class TestAvatarService:
     def test_delete_without_avatar_is_a_no_op(self, make_user, avatar_dir) -> None:
         AvatarService(avatar_dir).delete(make_user())
 
+    @pytest.mark.security
     def test_never_deletes_files_outside_pattern(self, make_user, avatar_dir, tmp_path, image_bytes) -> None:
         secret = tmp_path / "secret.txt"
         secret.write_text("nie usuwać", encoding="utf-8")

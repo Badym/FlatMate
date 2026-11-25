@@ -37,6 +37,7 @@ def test_event_in_request_has_ip_and_path(app: Flask, caplog) -> None:
 @pytest.mark.parametrize(
     "field", ["password", "new_password", "session_token", "invite_token", "secret_key", "csrf_token", "cookie"]
 )
+@pytest.mark.security
 def test_sensitive_fields_are_redacted(app_ctx, caplog, field: str) -> None:
     with caplog.at_level(logging.INFO, logger="flatmate.security"):
         audit_event("test", **{field: "tajna-wartosc"})
