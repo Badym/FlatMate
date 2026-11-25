@@ -17,6 +17,7 @@ def test_landing_page(client: FlaskClient) -> None:
     assert 'id="funkcje"' in html
 
 
+@pytest.mark.endpoint
 def test_health_reports_liveness_without_database_details(client: FlaskClient) -> None:
     response = client.get("/health")
 
@@ -24,6 +25,7 @@ def test_health_reports_liveness_without_database_details(client: FlaskClient) -
     assert response.get_json() == {"status": "ok"}
 
 
+@pytest.mark.endpoint
 def test_health_stays_ok_when_database_is_unavailable(
     client: FlaskClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -35,6 +37,7 @@ def test_health_stays_ok_when_database_is_unavailable(
     assert response.get_json() == {"status": "ok"}
 
 
+@pytest.mark.endpoint
 def test_ready_reports_database_ok(client: FlaskClient) -> None:
     response = client.get("/ready")
 
@@ -42,6 +45,7 @@ def test_ready_reports_database_ok(client: FlaskClient) -> None:
     assert response.get_json() == {"status": "ok", "database": "ok"}
 
 
+@pytest.mark.endpoint
 def test_ready_reports_database_failure(client: FlaskClient, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(HealthRepository, "ping", lambda self: False)
 

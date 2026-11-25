@@ -82,6 +82,7 @@ class TestProfileData:
         assert "Od 2 do 50 znaków." in response.get_data(as_text=True)
         assert _reload(user).display_name == "Ola Nowak"
 
+    @pytest.mark.security
     def test_name_is_escaped_in_navigation(self, client, user) -> None:
         client.post("/profile", data={"profile-display_name": "<b>Ola</b>", "profile-color_index": "1"})
 
@@ -90,6 +91,7 @@ class TestProfileData:
         assert "<b>Ola</b>" not in html
         assert "&lt;b&gt;Ola&lt;/b&gt;" in html
 
+    @pytest.mark.security
     def test_requires_csrf_token(self, make_app, make_user) -> None:
         client = make_app(WTF_CSRF_ENABLED=True).test_client()
         with client.session_transaction() as session:
@@ -109,6 +111,7 @@ class TestPasswordChange:
             },
         )
 
+    @pytest.mark.security
     def test_changes_password_and_logs_out_other_sessions(self, app, client, user, test_password) -> None:
         other_device = app.test_client()
         with other_device.session_transaction() as session:
@@ -121,6 +124,7 @@ class TestPasswordChange:
         assert client.get("/profile").status_code == 200
         assert other_device.get("/profile").status_code == 302
 
+    @pytest.mark.security
     def test_rejects_wrong_current_password(self, client, user, test_password) -> None:
         response = self._change(client, "zle-obecne-haslo")
 
@@ -137,6 +141,7 @@ class TestPasswordChange:
 
         assert "Hasła nie są takie same." in response.get_data(as_text=True)
 
+    @pytest.mark.security
     def test_is_rate_limited(self, make_app, make_user) -> None:
         client = make_app(RATELIMIT_ENABLED=True).test_client()
         with client.session_transaction() as session:
@@ -177,6 +182,7 @@ class TestAvatar:
             (b"GIF89a", "awatar.gif", "tylko obrazy PNG i JPEG"),
         ],
     )
+    @pytest.mark.security
     def test_rejects_non_images(self, client, user, avatar_dir, content, filename, message) -> None:
         response = _upload(client, content, filename)
 
@@ -185,6 +191,7 @@ class TestAvatar:
         assert _reload(user).avatar_filename is None
         assert not avatar_dir.exists() or not any(avatar_dir.iterdir())
 
+    @pytest.mark.security
     def test_rejects_file_over_two_megabytes(self, client, user) -> None:
         response = _upload(client, b"0" * (2 * 1024 * 1024 + 1))
 

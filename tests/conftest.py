@@ -60,6 +60,16 @@ class IsolatedClient(FlaskClient):
         return super().open(*args, **kwargs)
 
 
+CATEGORY_MARKERS = ("integration", "security", "endpoint")
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Każdy test należy do jednej kategorii: bez oznaczenia jest jednostkowy (``-m unit``)."""
+    for item in items:
+        if not any(item.get_closest_marker(name) for name in CATEGORY_MARKERS):
+            item.add_marker(pytest.mark.unit)
+
+
 @pytest.fixture
 def avatar_dir(tmp_path: Path) -> Path:
     """Awatary zapisywane w testach trafiają do katalogu tymczasowego, nie do repozytorium."""

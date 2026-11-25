@@ -5,6 +5,8 @@ from flask.testing import FlaskClient
 
 from backend.security.headers import CONTENT_SECURITY_POLICY
 
+pytestmark = pytest.mark.security
+
 
 @pytest.mark.parametrize("url", ["/", "/login", "/does-not-exist", "/static/css/main.css"])
 def test_security_headers_on_every_response(client: FlaskClient, url: str) -> None:

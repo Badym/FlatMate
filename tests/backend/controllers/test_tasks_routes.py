@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
+import pytest
+
 from backend.core.extensions import db
 from backend.models import Recurrence, Task, TaskStatus, TaskType
 from backend.models.types import utcnow
@@ -141,6 +143,7 @@ def test_admin_can_manage_other_members_task(
     assert task.title == "Umyć łazienkę"
 
 
+@pytest.mark.security
 def test_member_cannot_manage_another_authors_task(
     client, login, make_user, make_flat, add_member, default_task_types
 ) -> None:
@@ -156,6 +159,7 @@ def test_member_cannot_manage_another_authors_task(
     assert db.session.get(Task, task.id) is not None
 
 
+@pytest.mark.security
 def test_task_routes_are_scoped_to_flat(
     client, login, make_user, make_flat, default_task_types
 ) -> None:
@@ -248,6 +252,7 @@ def test_task_list_rejects_unknown_filter(client, login, make_user, make_flat) -
     assert response.status_code == 400
 
 
+@pytest.mark.security
 def test_task_form_rejects_type_from_another_flat(
     client, login, make_user, make_flat, default_task_types
 ) -> None:

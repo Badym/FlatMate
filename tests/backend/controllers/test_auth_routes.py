@@ -55,6 +55,7 @@ class TestLoginPage:
         assert 'name="password"' in html
         assert 'autocomplete="current-password"' in html
 
+    @pytest.mark.security
     def test_forms_include_csrf_token_when_enabled(self, make_app) -> None:
         client = make_app(WTF_CSRF_ENABLED=True).test_client()
 
@@ -89,6 +90,7 @@ class TestLogin:
 
         assert _login(client, "  OLA@Example.COM ", test_password).status_code == 302
 
+    @pytest.mark.security
     def test_wrong_password_and_unknown_email_look_the_same(self, client, make_user) -> None:
         user = make_user()
 
@@ -102,6 +104,7 @@ class TestLogin:
             assert "nie istnieje" not in html
         assert not _is_logged_in(client)
 
+    @pytest.mark.security
     def test_failed_login_is_logged_without_password(self, client, make_user, caplog) -> None:
         user = make_user()
 
@@ -113,6 +116,7 @@ class TestLogin:
         assert event["target_user_id"] == user.id
         assert "zle-haslo-123456" not in caplog.text
 
+    @pytest.mark.security
     def test_account_locks_after_max_failures(self, client, make_user, test_password) -> None:
         user = make_user()
         for _ in range(LOGIN_MAX_FAILURES):
@@ -124,6 +128,7 @@ class TestLogin:
         assert LOGIN_FAILED_MESSAGE in response.get_data(as_text=True)
         assert _reload(user).locked_until > utcnow() + timedelta(minutes=14)
 
+    @pytest.mark.security
     def test_lock_expires(self, client, make_user, test_password) -> None:
         user = make_user(locked_until=utcnow() - timedelta(seconds=1), failed_logins=3)
 
@@ -132,6 +137,7 @@ class TestLogin:
         assert user.locked_until is None
         assert user.failed_logins == 0
 
+    @pytest.mark.security
     def test_session_is_renewed_on_login(self, client, make_user, test_password) -> None:
         user = make_user()
         with client.session_transaction() as session:
@@ -143,6 +149,7 @@ class TestLogin:
             assert "podrzucone" not in session
             assert session.permanent
 
+    @pytest.mark.security
     def test_session_cookie_flags(self, client, make_user, test_password) -> None:
         user = make_user()
 
@@ -160,6 +167,7 @@ class TestLogin:
         assert response.headers["Location"].endswith(target)
 
     @pytest.mark.parametrize("target", ["https://evil.example/", "//evil.example", "/\\evil.example"])
+    @pytest.mark.security
     def test_ignores_unsafe_next(self, client, make_user, test_password, target: str) -> None:
         user = make_user()
 
@@ -178,6 +186,7 @@ class TestLogin:
         assert response.headers["Location"].endswith("/flats?widok=lista")
 
 
+@pytest.mark.security
 class TestRateLimit:
     @pytest.fixture
     def limited_app(self, make_app):
@@ -231,6 +240,7 @@ class TestRegister:
         assert EMAIL_TAKEN_MESSAGE in response.get_data(as_text=True)
         assert db.session.query(User).count() == 1
 
+    @pytest.mark.security
     def test_requires_min_password_length(self, client, app_ctx) -> None:
         short = "a" * (PASSWORD_MIN_LENGTH - 1)
 
@@ -244,6 +254,7 @@ class TestRegister:
 
         assert "Hasła nie są takie same." in response.get_data(as_text=True)
 
+    @pytest.mark.security
     def test_user_input_is_escaped(self, client) -> None:
         payload = "<script>alert(1)</script>"
 
@@ -259,6 +270,7 @@ class TestLogout:
 
         assert client.get("/logout").status_code == 405
 
+    @pytest.mark.security
     def test_logs_out_and_invalidates_copied_cookie(self, app, client, make_user, test_password) -> None:
         user = make_user()
         _login(client, user.email, test_password)
@@ -273,6 +285,7 @@ class TestLogout:
         attacker.set_cookie(cookie_name, stolen_cookie)
         assert attacker.get("/flats").status_code == 302
 
+    @pytest.mark.security
     def test_requires_csrf_token(self, make_app, make_user) -> None:
         client = make_app(WTF_CSRF_ENABLED=True).test_client()
         user = make_user()

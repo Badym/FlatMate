@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 
+import pytest
+
 from backend.core.extensions import db
 from backend.models import (
     Flat,
@@ -77,6 +79,7 @@ def test_counts_open_tasks_without_series_templates(client, login, make_user, ma
     assert "3 zadania do zrobienia" in html
 
 
+@pytest.mark.security
 def test_flat_name_is_escaped(client, login, make_user, make_flat) -> None:
     user = make_user()
     make_flat(admin=user, name="<img src=x onerror=alert(1)>")
@@ -113,6 +116,7 @@ def test_create_flat_validates_name(client, login, make_user) -> None:
     assert "Podaj nazwę mieszkania." in response.get_data(as_text=True)
 
 
+@pytest.mark.security
 def test_flat_dashboard_and_member_routes_are_scoped(client, login, make_user, make_flat) -> None:
     owner, outsider = make_user(), make_user()
     flat = make_flat(admin=owner)
@@ -122,6 +126,7 @@ def test_flat_dashboard_and_member_routes_are_scoped(client, login, make_user, m
     assert client.get(f"/flats/{flat.id}/members").status_code == 404
 
 
+@pytest.mark.security
 def test_member_cannot_use_admin_member_actions(client, login, make_user, make_flat, add_member) -> None:
     admin, member = make_user(), make_user()
     flat = make_flat(admin=admin)
@@ -193,6 +198,7 @@ def test_rejected_join_request_is_not_duplicated(client, login, make_user, make_
     assert rejected.status is MembershipStatus.REJECTED
 
 
+@pytest.mark.security
 def test_expired_invite_cannot_be_used(client, login, make_user, make_flat) -> None:
     admin, applicant = make_user(), make_user()
     flat = make_flat(admin=admin)
@@ -318,6 +324,7 @@ def test_dashboard_shows_only_active_members(client, login, make_user, make_flat
     assert "Czekający Czesiek" not in html
 
 
+@pytest.mark.security
 def test_join_requests_are_visible_only_to_admin(client, login, make_user, make_flat, add_member) -> None:
     admin, member = make_user(), make_user()
     pending = make_user(email="czeka@example.com")
@@ -376,6 +383,7 @@ def test_member_actions_reject_invalid_transitions(client, login, make_user, mak
     assert pending.role is MemberRole.MEMBER
 
 
+@pytest.mark.security
 def test_admin_cannot_manage_memberships_or_invites_of_another_flat(
     client, login, make_user, make_flat, add_member
 ) -> None:
